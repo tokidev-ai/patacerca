@@ -20,16 +20,24 @@ export default function VerificationStepRoute() {
     queryFn: () => verificationRepository.getVerificationData(walkerId),
   });
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/verification');
+    }
+  };
+
   return (
     <VerificationStepModal
       visible={true}
       step={stepNumber}
       walkerId={walkerId}
       initialData={vData || undefined}
-      onClose={() => router.back()}
+      onClose={handleBack}
       onSaved={() => {
         queryClient.invalidateQueries({ queryKey: ['verification', walkerId] });
-        router.back();
+        handleBack();
       }}
     />
   );

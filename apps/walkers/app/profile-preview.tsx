@@ -7,6 +7,14 @@ export default function ProfilePreviewRoute() {
   const router = useRouter();
   const { walker, status } = useWalkerSessionStore();
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)/profile');
+    }
+  };
+
   return (
     <ProfilePreviewModal
       visible={true}
@@ -14,7 +22,7 @@ export default function ProfilePreviewRoute() {
       status={status}
       price30={walker?.price30 || 20}
       bio={walker?.bio || ''}
-      onClose={() => router.back()}
+      onClose={handleBack}
     />
   );
 }

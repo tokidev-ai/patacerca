@@ -77,6 +77,14 @@ export const ChatScreen: React.FC = () => {
     Linking.openURL(`https://wa.me/591${walker.phone}?text=${text}`);
   };
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)/messages');
+    }
+  };
+
   return (
     <SafeAreaView edges={['top', 'left', 'right', 'bottom']} style={styles.safeArea}>
       <KeyboardAvoidingView
@@ -86,7 +94,7 @@ export const ChatScreen: React.FC = () => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <IconButton icon="back" size={40} onPress={() => router.back()} />
+          <IconButton icon="back" size={40} onPress={handleBack} />
           <View style={styles.headerProfile}>
             <Avatar
               name={walker?.name || 'Paseador'}

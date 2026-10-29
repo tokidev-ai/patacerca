@@ -77,6 +77,14 @@ export const RequestWalkModal: React.FC = () => {
     sendRequestMutation.mutate();
   };
 
+  const handleClose = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)/search');
+    }
+  };
+
   return (
     <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={styles.safeArea}>
       <KeyboardAvoidingView
@@ -92,7 +100,7 @@ export const RequestWalkModal: React.FC = () => {
               Solicitar paseo para {owner?.dogName || 'tu perro'}
             </Text>
           </View>
-          <IconButton icon="close" onPress={() => router.back()} />
+          <IconButton icon="close" onPress={handleClose} />
         </View>
 
         <ScrollView

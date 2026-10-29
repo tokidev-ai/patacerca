@@ -39,6 +39,14 @@ export const PhoneScreen: React.FC = () => {
     }
   };
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(auth)/welcome');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
@@ -51,7 +59,7 @@ export const PhoneScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <IconButton icon="back" onPress={() => router.back()} />
+            <IconButton icon="back" onPress={handleBack} />
           </View>
 
           <View style={styles.content}>

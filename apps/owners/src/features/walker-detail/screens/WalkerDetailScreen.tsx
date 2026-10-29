@@ -52,6 +52,14 @@ export const WalkerDetailScreen: React.FC = () => {
     Linking.openURL(`https://wa.me/591${walker.phone}?text=${text}`);
   };
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)/search');
+    }
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView
@@ -67,7 +75,7 @@ export const WalkerDetailScreen: React.FC = () => {
               <IconButton
                 icon="back"
                 variant="translucent"
-                onPress={() => router.back()}
+                onPress={handleBack}
               />
             </View>
 
