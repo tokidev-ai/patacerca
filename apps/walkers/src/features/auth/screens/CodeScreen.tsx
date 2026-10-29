@@ -3,10 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Button, IconButton, OtpInput } from '@patacerca/ui';
 import { APP_STRINGS } from '@patacerca/core';
@@ -53,43 +54,49 @@ export const CodeScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.container}
       >
-        <View style={styles.header}>
-          <IconButton icon="back" onPress={() => router.back()} />
-        </View>
-
-        <View style={styles.content}>
-          <Text style={styles.title}>Ingresa el código</Text>
-          <Text style={styles.subtitle}>
-            Lo enviamos por WhatsApp al +591 {phone}.
-          </Text>
-
-          <View style={styles.inputWrapper}>
-            <OtpInput
-              value={code}
-              onChangeText={(val) => {
-                setCode(val);
-                if (error) setError('');
-              }}
-              error={error}
-              autoFocus
-            />
-            <Text style={styles.hint}>Código de prueba: 1234</Text>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.header}>
+            <IconButton icon="back" onPress={() => router.back()} />
           </View>
-        </View>
 
-        <View style={styles.bottomBar}>
-          <Button
-            title="Verificar"
-            onPress={handleVerify}
-            loading={loading}
-            size="lg"
-          />
-        </View>
+          <View style={styles.content}>
+            <Text style={styles.title}>Ingresa el código</Text>
+            <Text style={styles.subtitle}>
+              Lo enviamos por WhatsApp al +591 {phone}.
+            </Text>
+
+            <View style={styles.inputWrapper}>
+              <OtpInput
+                value={code}
+                onChangeText={(val) => {
+                  setCode(val);
+                  if (error) setError('');
+                }}
+                error={error}
+                autoFocus
+              />
+              <Text style={styles.hint}>Código de prueba: 1234</Text>
+            </View>
+          </View>
+
+          <View style={styles.bottomBar}>
+            <Button
+              title="Verificar"
+              onPress={handleVerify}
+              loading={loading}
+              size="lg"
+            />
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -102,6 +109,9 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 24,
     justifyContent: 'space-between',
   },

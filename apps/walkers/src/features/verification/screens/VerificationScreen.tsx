@@ -3,10 +3,10 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button, IconButton } from '@patacerca/ui';
@@ -91,13 +91,14 @@ export const VerificationScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
       <View style={styles.header}>
         <IconButton icon="back" onPress={() => router.back()} />
       </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.scrollContent}
       >
         <Text style={styles.eyebrow}>{completedCount} de 4 pasos</Text>
@@ -187,7 +188,7 @@ export const VerificationScreen: React.FC = () => {
 
       {/* Bottom Button if status is pending */}
       {status === 'pending' && (
-        <SafeAreaView style={styles.bottomSafeArea}>
+        <SafeAreaView edges={['bottom', 'left', 'right']} style={styles.bottomSafeArea}>
           <View style={styles.bottomBar}>
             <Button
               title="Enviar a revisión"

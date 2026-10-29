@@ -18,6 +18,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: 'com.patacerca.walkers',
   },
+  androidStatusBar: {
+    barStyle: 'dark-content',
+    backgroundColor: '#F7F2EA',
+    translucent: false,
+  },
   web: {
     bundler: 'metro',
   },

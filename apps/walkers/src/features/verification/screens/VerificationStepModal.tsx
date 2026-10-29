@@ -168,6 +168,7 @@ export const VerificationStepModal: React.FC<VerificationStepModalProps> = ({
 
               <ScrollView
                 showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
                 contentContainerStyle={styles.scrollContent}
               >
                 {step === 1 && (

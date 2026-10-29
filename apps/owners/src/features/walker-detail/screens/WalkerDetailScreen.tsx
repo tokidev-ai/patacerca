@@ -3,11 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   Linking,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -34,7 +34,7 @@ export const WalkerDetailScreen: React.FC = () => {
 
   if (isLoading || !walker) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Cargando información...</Text>
         </View>
@@ -62,7 +62,7 @@ export const WalkerDetailScreen: React.FC = () => {
         <View
           style={[styles.headerContainer, { backgroundColor: colorConfig.bg }]}
         >
-          <SafeAreaView>
+          <SafeAreaView edges={['top', 'left', 'right']}>
             <View style={styles.navBar}>
               <IconButton
                 icon="back"
@@ -173,7 +173,7 @@ export const WalkerDetailScreen: React.FC = () => {
       </ScrollView>
 
       {/* Bottom Action Bar */}
-      <SafeAreaView style={styles.bottomBarSafeArea}>
+      <SafeAreaView edges={['bottom', 'left', 'right']} style={styles.bottomBarSafeArea}>
         <View style={styles.bottomBar}>
           <Button
             title="Escribir"

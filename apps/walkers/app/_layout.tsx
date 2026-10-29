@@ -11,6 +11,8 @@ import {
   BricolageGrotesque_500Medium,
   BricolageGrotesque_700Bold,
 } from '@expo-google-fonts/bricolage-grotesque';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { WalkerDataProvider } from '../src/providers/DataProvider';
 import { QueryProvider } from '../src/providers/QueryProvider';
 import { ToastProvider } from '../src/providers/ToastProvider';
@@ -37,45 +39,48 @@ export default function RootLayout() {
   }
 
   return (
-    <WalkerDataProvider>
-      <QueryProvider>
-        <ToastProvider>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: '#F7F2EA' },
-            }}
-          >
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen
-              name="verification/index"
-              options={{ animation: 'slide_from_right' }}
-            />
-            <Stack.Screen
-              name="verification/[step]"
-              options={{
-                presentation: 'formSheet',
-                animation: 'slide_from_bottom',
+    <SafeAreaProvider>
+      <StatusBar style="dark" />
+      <WalkerDataProvider>
+        <QueryProvider>
+          <ToastProvider>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: '#F7F2EA' },
               }}
-            />
-            <Stack.Screen
-              name="profile-preview"
-              options={{ presentation: 'transparentModal' }}
-            />
-            <Stack.Screen
-              name="chat/[threadId]"
-              options={{ animation: 'slide_from_right' }}
-            />
-            <Stack.Screen
-              name="__dev/ui"
-              options={{ presentation: 'modal' }}
-            />
-          </Stack>
-        </ToastProvider>
-      </QueryProvider>
-    </WalkerDataProvider>
+            >
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen
+                name="verification/index"
+                options={{ animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name="verification/[step]"
+                options={{
+                  presentation: 'formSheet',
+                  animation: 'slide_from_bottom',
+                }}
+              />
+              <Stack.Screen
+                name="profile-preview"
+                options={{ presentation: 'transparentModal' }}
+              />
+              <Stack.Screen
+                name="chat/[threadId]"
+                options={{ animation: 'slide_from_right' }}
+              />
+              <Stack.Screen
+                name="__dev/ui"
+                options={{ presentation: 'modal' }}
+              />
+            </Stack>
+          </ToastProvider>
+        </QueryProvider>
+      </WalkerDataProvider>
+    </SafeAreaProvider>
   );
 }
 

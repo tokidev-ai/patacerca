@@ -3,10 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Button, IconButton, PhoneInput } from '@patacerca/ui';
 import { isValidBolivianPhone, cleanBolivianPhone, APP_STRINGS } from '@patacerca/core';
@@ -39,42 +40,48 @@ export const PhoneScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.container}
       >
-        <View style={styles.header}>
-          <IconButton icon="back" onPress={() => router.back()} />
-        </View>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.header}>
+            <IconButton icon="back" onPress={() => router.back()} />
+          </View>
 
-        <View style={styles.content}>
-          <Text style={styles.title}>¿Cuál es tu WhatsApp?</Text>
-          <Text style={styles.subtitle}>
-            Por aquí te llegarán las solicitudes de los dueños.
-          </Text>
+          <View style={styles.content}>
+            <Text style={styles.title}>¿Cuál es tu WhatsApp?</Text>
+            <Text style={styles.subtitle}>
+              Por aquí te llegarán las solicitudes de los dueños.
+            </Text>
 
-          <View style={styles.inputWrapper}>
-            <PhoneInput
-              value={phone}
-              onChangeText={(val) => {
-                setPhone(val);
-                if (error) setError('');
-              }}
-              error={error}
-              autoFocus
+            <View style={styles.inputWrapper}>
+              <PhoneInput
+                value={phone}
+                onChangeText={(val) => {
+                  setPhone(val);
+                  if (error) setError('');
+                }}
+                error={error}
+                autoFocus
+              />
+            </View>
+          </View>
+
+          <View style={styles.bottomBar}>
+            <Button
+              title="Enviar código"
+              onPress={handleSubmit}
+              loading={loading}
+              size="lg"
             />
           </View>
-        </View>
-
-        <View style={styles.bottomBar}>
-          <Button
-            title="Enviar código"
-            onPress={handleSubmit}
-            loading={loading}
-            size="lg"
-          />
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -87,6 +94,9 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 24,
     justifyContent: 'space-between',
   },

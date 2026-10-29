@@ -4,8 +4,8 @@ import {
   Text,
   StyleSheet,
   Image,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Button } from '@patacerca/ui';
@@ -23,7 +23,7 @@ export const WelcomeScreen: React.FC = () => {
           resizeMode="cover"
         />
       </View>
-      <SafeAreaView style={styles.bottomSafeArea}>
+      <SafeAreaView edges={['bottom', 'left', 'right']} style={styles.bottomSafeArea}>
         <View style={styles.bottomContent}>
           <View style={styles.logoRow}>
             <View style={styles.logoDot} />
