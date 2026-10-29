@@ -84,10 +84,10 @@ Desde la carpeta raíz `patacerca/`:
 # Instalar dependencias del monorepo
 npm install
 
-# Iniciar la App de Dueños
+# Iniciar la App de Dueños (puerto 8081)
 npm run owners
 
-# Iniciar la App de Paseadores
+# Iniciar la App de Paseadores (puerto 8082) en otra terminal
 npm run walkers
 ```
 
