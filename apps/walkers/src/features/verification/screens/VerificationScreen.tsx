@@ -104,123 +104,121 @@ export const VerificationScreen: React.FC = () => {
       handleBack();
       return true;
     };
-    const subscription = BackHandler.addEventListener(
-      'hardwareBackPress',
-      onBackPress
-    );
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
     return () => subscription.remove();
   }, []);
 
+  const showSubmitFooter = status === 'pending';
+
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
-      <View style={styles.header}>
-        <IconButton icon="back" onPress={handleBack} />
-      </View>
+      <View style={styles.main}>
+        <View style={styles.header}>
+          <IconButton icon="back" onPress={handleBack} />
+        </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.scrollContent}
-      >
-        <Text style={styles.eyebrow}>{completedCount} de 4 pasos</Text>
-        <Text style={styles.title}>Verificación de paseador</Text>
-        <Text style={styles.subtitle}>
-          Los dueños confían en ti porque nosotros te conocemos primero. Toma unos
-          10 minutos.
-        </Text>
-
-        {/* Founder banner */}
-        <View style={styles.founderBanner}>
-          <Text style={styles.founderText}>
-            Paseador fundador: tu verificación es gratuita.
+        <ScrollView
+          style={styles.scroll}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={[
+            styles.scrollContent,
+            showSubmitFooter && styles.scrollContentWithFooter,
+          ]}
+        >
+          <Text style={styles.eyebrow}>{completedCount} de 4 pasos</Text>
+          <Text style={styles.title}>Verificación de paseador</Text>
+          <Text style={styles.subtitle}>
+            Los dueños confían en ti porque nosotros te conocemos primero. Toma unos 10
+            minutos.
           </Text>
-        </View>
 
-        {/* Status notice */}
-        {status === 'in_review' && (
-          <View style={styles.reviewNotice}>
-            <Text style={styles.reviewNoticeTitle}>
-              Enviado a revisión
-            </Text>
-            <Text style={styles.reviewNoticeText}>
-              Revisaremos tus documentos y te confirmaremos la entrevista por
-              WhatsApp.
+          {/* Founder banner */}
+          <View style={styles.founderBanner}>
+            <Text style={styles.founderText}>
+              Paseador fundador: tu verificación es gratuita.
             </Text>
           </View>
-        )}
 
-        {status === 'approved' && (
-          <View style={styles.approvedNotice}>
-            <Text style={styles.approvedText}>
-              ✓ Eres paseador verificado. Ya puedes aceptar paseos.
-            </Text>
-          </View>
-        )}
+          {/* Status notice */}
+          {status === 'in_review' && (
+            <View style={styles.reviewNotice}>
+              <Text style={styles.reviewNoticeTitle}>Enviado a revisión</Text>
+              <Text style={styles.reviewNoticeText}>
+                Revisaremos tus documentos y te confirmaremos la entrevista por WhatsApp.
+              </Text>
+            </View>
+          )}
 
-        {/* Steps List */}
-        <View style={styles.stepsList}>
-          {stepsConfig.map((item) => (
-            <TouchableOpacity
-              key={item.step}
-              activeOpacity={status === 'in_review' ? 1 : 0.7}
-              onPress={() => handleStepPress(item.step)}
-              style={[
-                styles.stepCard,
-                item.isCompleted && styles.stepCardCompleted,
-              ]}
-            >
-              <View
-                style={[
-                  styles.stepNumberCircle,
-                  item.isCompleted && styles.stepCircleCompleted,
-                ]}
+          {status === 'approved' && (
+            <View style={styles.approvedNotice}>
+              <Text style={styles.approvedText}>
+                ✓ Eres paseador verificado. Ya puedes aceptar paseos.
+              </Text>
+            </View>
+          )}
+
+          {/* Steps List */}
+          <View style={styles.stepsList}>
+            {stepsConfig.map((item) => (
+              <TouchableOpacity
+                key={item.step}
+                activeOpacity={status === 'in_review' ? 1 : 0.7}
+                onPress={() => handleStepPress(item.step)}
+                style={[styles.stepCard, item.isCompleted && styles.stepCardCompleted]}
               >
-                <Text
+                <View
                   style={[
-                    styles.stepNumberText,
-                    item.isCompleted && styles.stepNumberCompletedText,
+                    styles.stepNumberCircle,
+                    item.isCompleted && styles.stepCircleCompleted,
                   ]}
                 >
-                  {item.isCompleted ? '✓' : item.step}
-                </Text>
-              </View>
+                  <Text
+                    style={[
+                      styles.stepNumberText,
+                      item.isCompleted && styles.stepNumberCompletedText,
+                    ]}
+                  >
+                    {item.isCompleted ? '✓' : item.step}
+                  </Text>
+                </View>
 
-              <View style={styles.stepInfo}>
-                <Text style={styles.stepTitle}>{item.title}</Text>
-                <Text style={styles.stepDesc}>{item.desc}</Text>
-              </View>
+                <View style={styles.stepInfo}>
+                  <Text style={styles.stepTitle}>{item.title}</Text>
+                  <Text style={styles.stepDesc}>{item.desc}</Text>
+                </View>
 
-              {status !== 'in_review' && (
-                <Text
-                  style={[
-                    styles.stepActionText,
-                    item.isCompleted
-                      ? styles.actionTextCompleted
-                      : styles.actionTextStart,
-                  ]}
-                >
-                  {item.isCompleted ? 'Editar' : 'Empezar'}
-                </Text>
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
-
-      {/* Bottom Button if status is pending */}
-      {status === 'pending' && (
-        <SafeAreaView edges={['bottom', 'left', 'right']} style={styles.bottomSafeArea}>
-          <View style={styles.bottomBar}>
-            <Button
-              title="Enviar a revisión"
-              onPress={() => submitMutation.mutate()}
-              variant={allStepsComplete ? 'primary' : 'disabled'}
-              loading={submitMutation.isPending}
-              size="lg"
-            />
+                {status !== 'in_review' && (
+                  <Text
+                    style={[
+                      styles.stepActionText,
+                      item.isCompleted
+                        ? styles.actionTextCompleted
+                        : styles.actionTextStart,
+                    ]}
+                  >
+                    {item.isCompleted ? 'Editar' : 'Empezar'}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            ))}
           </View>
-        </SafeAreaView>
-      )}
+        </ScrollView>
+
+        {showSubmitFooter ? (
+          <SafeAreaView edges={['bottom', 'left', 'right']} style={styles.bottomSafeArea}>
+            <View style={styles.bottomBar}>
+              <Button
+                title="Enviar a revisión"
+                onPress={() => submitMutation.mutate()}
+                variant={allStepsComplete ? 'primary' : 'disabled'}
+                loading={submitMutation.isPending}
+                size="lg"
+              />
+            </View>
+          </SafeAreaView>
+        ) : null}
+      </View>
 
       {/* Step Modal Sheet */}
       {activeStep && (
@@ -247,14 +245,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F7F2EA',
   },
+  main: {
+    flex: 1,
+  },
   header: {
     paddingHorizontal: 20,
     paddingTop: 12,
     marginBottom: 8,
   },
+  scroll: {
+    flex: 1,
+  },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingBottom: 100,
+    paddingBottom: 24,
+  },
+  scrollContentWithFooter: {
+    paddingBottom: 16,
   },
   eyebrow: {
     fontFamily: 'Figtree_600SemiBold',
@@ -381,10 +388,6 @@ const styles = StyleSheet.create({
     color: '#6B6058',
   },
   bottomSafeArea: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     backgroundColor: '#F7F2EA',
   },
   bottomBar: {
@@ -394,4 +397,3 @@ const styles = StyleSheet.create({
     borderTopColor: '#E6DCCD',
   },
 });
-

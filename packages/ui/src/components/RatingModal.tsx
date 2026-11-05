@@ -33,12 +33,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
           <TouchableWithoutFeedback>
@@ -80,11 +75,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
               />
 
               <View style={styles.buttonRow}>
-                <Button
-                  title="Confirmar calificación"
-                  onPress={handleSubmit}
-                  size="md"
-                />
+                <Button title="Confirmar calificación" onPress={handleSubmit} size="md" />
               </View>
             </View>
           </TouchableWithoutFeedback>
@@ -163,4 +154,3 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 });
-

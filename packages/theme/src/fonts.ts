@@ -5,4 +5,3 @@ export const fontFamilies = {
   bodyMedium: 'Figtree_500Medium',
   bodySemibold: 'Figtree_600SemiBold',
 } as const;
-

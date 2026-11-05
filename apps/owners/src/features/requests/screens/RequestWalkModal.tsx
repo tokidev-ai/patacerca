@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -9,11 +9,26 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import DateTimePicker, {
+  type DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, IconButton, Chip } from '@patacerca/ui';
-import { WALK_HOURS, APP_STRINGS } from '@patacerca/core';
+import { Button, IconButton, keyboardAvoidingBehavior } from '@patacerca/ui';
+import {
+  APP_STRINGS,
+  formatTimeHHmm,
+  formatWalkDayCalendar,
+  formatWalkDayText,
+  getDefaultWalkTime,
+  getWalkScheduleMinDate,
+  getWalkScheduleMaxDate,
+  clampWalkScheduleDate,
+  toWalkDayId,
+  isWalkScheduleInPast,
+  roundTimeToInterval,
+} from '@patacerca/core';
 import { useData } from '../../../providers/DataProvider';
 import { useSessionStore } from '../../../store/session.store';
 import { useToastStore } from '../../../store/toast.store';
@@ -26,11 +41,26 @@ export const RequestWalkModal: React.FC = () => {
   const { owner } = useSessionStore();
   const { showToast } = useToastStore();
 
+  const scheduleMinDate = useMemo(() => getWalkScheduleMinDate(), []);
+  const scheduleMaxDate = useMemo(() => getWalkScheduleMaxDate(), []);
+
   const [duration, setDuration] = useState<30 | 60>(30);
-  const [selectedDay, setSelectedDay] = useState('Hoy');
-  const [selectedTime, setSelectedTime] = useState<string>('');
+  const [walkDate, setWalkDate] = useState(() => getWalkScheduleMinDate());
+  const [scheduleTime, setScheduleTime] = useState(() => getDefaultWalkTime());
+  const [showAndroidDatePicker, setShowAndroidDatePicker] = useState(false);
+  const [showAndroidTimePicker, setShowAndroidTimePicker] = useState(false);
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
+
+  const walkDayId = toWalkDayId(walkDate);
+  const walkDayLabel = formatWalkDayText(walkDate);
+  const walkDayCalendarLabel = formatWalkDayCalendar(walkDate);
+
+  const datePickerValue = useMemo(() => {
+    const d = new Date(walkDate);
+    d.setHours(12, 0, 0, 0);
+    return d;
+  }, [walkDate]);
 
   const { data: walker } = useQuery({
     queryKey: ['walker', walkerId],
@@ -41,6 +71,7 @@ export const RequestWalkModal: React.FC = () => {
   const sendRequestMutation = useMutation({
     mutationFn: () => {
       const price = duration === 30 ? walker?.price30 || 20 : walker?.price60 || 32;
+      const timeText = formatTimeHHmm(scheduleTime);
       return requestsRepository.createRequest({
         ownerPhone: owner?.phone || '70000000',
         ownerName: owner?.name || 'Dueño',
@@ -50,8 +81,8 @@ export const RequestWalkModal: React.FC = () => {
         walkerId: walkerId || '',
         walkerName: walker?.name || 'Paseador',
         durationMinutes: duration,
-        dayText: selectedDay,
-        timeText: selectedTime,
+        dayText: walkDayLabel,
+        timeText,
         note: note.trim() || undefined,
         price,
       });
@@ -63,14 +94,43 @@ export const RequestWalkModal: React.FC = () => {
     },
   });
 
-  const daysList = ['Hoy', 'Mañana', 'Vie 30', 'Sáb 31', 'Dom 01', 'Lun 02'];
+  const totalPrice = duration === 30 ? walker?.price30 || 20 : walker?.price60 || 32;
 
-  const totalPrice =
-    duration === 30 ? walker?.price30 || 20 : walker?.price60 || 32;
+  const applyWalkDate = (next: Date) => {
+    const clamped = clampWalkScheduleDate(next);
+    setWalkDate(clamped);
+    const nextDayId = toWalkDayId(clamped);
+    setScheduleTime((prev) =>
+      isWalkScheduleInPast(nextDayId, prev) ? getDefaultWalkTime() : prev
+    );
+    if (error) setError('');
+  };
+
+  const handleDateChange = (event: DateTimePickerEvent, date?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowAndroidDatePicker(false);
+    }
+    if (event.type === 'dismissed' || !date) return;
+    applyWalkDate(date);
+  };
+
+  const handleTimeChange = (event: DateTimePickerEvent, date?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowAndroidTimePicker(false);
+    }
+    if (event.type === 'dismissed' || !date) return;
+    const rounded = roundTimeToInterval(date, 15);
+    if (isWalkScheduleInPast(walkDayId, rounded)) {
+      setError('Elige una hora futura para este día');
+      return;
+    }
+    setScheduleTime(rounded);
+    if (error) setError('');
+  };
 
   const handleSubmit = () => {
-    if (!selectedTime) {
-      setError(APP_STRINGS.errors.missingTimeSlot);
+    if (isWalkScheduleInPast(walkDayId, scheduleTime)) {
+      setError('Elige una fecha y hora futuras');
       return;
     }
     setError('');
@@ -87,15 +147,10 @@ export const RequestWalkModal: React.FC = () => {
 
   return (
     <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={styles.safeArea}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.container}
-      >
+      <KeyboardAvoidingView behavior={keyboardAvoidingBehavior} style={styles.container}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.eyebrow}>
-              Paseo con {walker?.name || 'Paseador'}
-            </Text>
+            <Text style={styles.eyebrow}>Paseo con {walker?.name || 'Paseador'}</Text>
             <Text style={styles.title}>
               Solicitar paseo para {owner?.dogName || 'tu perro'}
             </Text>
@@ -108,7 +163,6 @@ export const RequestWalkModal: React.FC = () => {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.scrollContent}
         >
-          {/* Duration */}
           <Text style={styles.sectionLabel}>Duración</Text>
           <View style={styles.durationRow}>
             <TouchableOpacity
@@ -127,9 +181,7 @@ export const RequestWalkModal: React.FC = () => {
               >
                 30 minutos
               </Text>
-              <Text style={styles.durationPrice}>
-                {walker?.price30 || 20} Bs
-              </Text>
+              <Text style={styles.durationPrice}>{walker?.price30 || 20} Bs</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -148,63 +200,99 @@ export const RequestWalkModal: React.FC = () => {
               >
                 60 minutos
               </Text>
-              <Text style={styles.durationPrice}>
-                {walker?.price60 || 32} Bs
-              </Text>
+              <Text style={styles.durationPrice}>{walker?.price60 || 32} Bs</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Day */}
-          <Text style={styles.sectionLabel}>Día</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.chipsRow}
-          >
-            {daysList.map((d) => (
-              <Chip
-                key={d}
-                label={d}
-                selected={selectedDay === d}
-                onPress={() => setSelectedDay(d)}
-                size="md"
-              />
-            ))}
-          </ScrollView>
+          <Text style={styles.sectionLabel}>Fecha y hora del paseo</Text>
+          <Text style={styles.sectionHint}>
+            Solo fechas desde hoy. Elige día, mes y hora en el calendario.
+          </Text>
 
-          {/* Time grid */}
-          <Text style={styles.sectionLabel}>Hora</Text>
-          <View style={styles.hoursGrid}>
-            {WALK_HOURS.map((h) => {
-              const isSelected = selectedTime === h;
-              return (
-                <TouchableOpacity
-                  key={h}
-                  activeOpacity={0.7}
-                  onPress={() => {
-                    setSelectedTime(h);
-                    if (error) setError('');
-                  }}
-                  style={[
-                    styles.hourButton,
-                    isSelected && styles.hourButtonSelected,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.hourText,
-                      isSelected && styles.hourTextSelected,
-                    ]}
+          <View style={styles.scheduleCard}>
+            <View style={styles.scheduleBlock}>
+              <Text style={styles.scheduleLabel}>Fecha del paseo</Text>
+              {Platform.OS === 'ios' ? (
+                <DateTimePicker
+                  value={datePickerValue}
+                  mode="date"
+                  display="spinner"
+                  minimumDate={scheduleMinDate}
+                  maximumDate={scheduleMaxDate}
+                  onChange={handleDateChange}
+                  themeVariant="light"
+                  style={styles.iosDatePicker}
+                />
+              ) : (
+                <>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={styles.androidPickerButton}
+                    onPress={() => setShowAndroidDatePicker(true)}
                   >
-                    {h}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+                    <Text style={styles.androidPickerMain}>{walkDayCalendarLabel}</Text>
+                    <Text style={styles.androidPickerHint}>Seleccionar fecha</Text>
+                  </TouchableOpacity>
+                  {showAndroidDatePicker ? (
+                    <DateTimePicker
+                      value={datePickerValue}
+                      mode="date"
+                      minimumDate={scheduleMinDate}
+                      maximumDate={scheduleMaxDate}
+                      onChange={handleDateChange}
+                    />
+                  ) : null}
+                </>
+              )}
+            </View>
+
+            <View style={styles.scheduleDivider} />
+
+            <View style={styles.scheduleBlock}>
+              <Text style={styles.scheduleLabel}>Hora de inicio</Text>
+              {Platform.OS === 'ios' ? (
+                <DateTimePicker
+                  value={scheduleTime}
+                  mode="time"
+                  display="spinner"
+                  is24Hour
+                  minuteInterval={15}
+                  onChange={handleTimeChange}
+                  themeVariant="light"
+                  style={styles.iosTimePicker}
+                />
+              ) : (
+                <>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={styles.androidPickerButton}
+                    onPress={() => setShowAndroidTimePicker(true)}
+                  >
+                    <Text style={styles.androidPickerMain}>
+                      {formatTimeHHmm(scheduleTime)}
+                    </Text>
+                    <Text style={styles.androidPickerHint}>Seleccionar hora</Text>
+                  </TouchableOpacity>
+                  {showAndroidTimePicker ? (
+                    <DateTimePicker
+                      value={scheduleTime}
+                      mode="time"
+                      is24Hour
+                      minuteInterval={15}
+                      onChange={handleTimeChange}
+                    />
+                  ) : null}
+                </>
+              )}
+            </View>
+
+            <Text style={styles.scheduleConfirm}>
+              Programado: {walkDayCalendarLabel} · {formatTimeHHmm(scheduleTime)}
+            </Text>
           </View>
+
           {Boolean(error) && <Text style={styles.errorText}>{error}</Text>}
 
-          {/* Optional Note */}
           <Text style={styles.sectionLabel}>
             Nota para {walker?.name || 'el paseador'}{' '}
             <Text style={styles.optional}>(opcional)</Text>
@@ -220,7 +308,6 @@ export const RequestWalkModal: React.FC = () => {
           />
         </ScrollView>
 
-        {/* Bottom Total & Submit */}
         <View style={styles.footer}>
           <View style={styles.totalRow}>
             <View>
@@ -281,6 +368,14 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 8,
   },
+  sectionHint: {
+    fontFamily: 'Figtree_400Regular',
+    fontSize: 13,
+    color: '#6B6058',
+    marginTop: -4,
+    marginBottom: 10,
+    lineHeight: 18,
+  },
   optional: {
     fontFamily: 'Figtree_400Regular',
     fontSize: 13,
@@ -317,41 +412,69 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#2A2420',
   },
-  chipsRow: {
-    gap: 8,
-    paddingVertical: 2,
-  },
-  hoursGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  hourButton: {
-    width: '31%',
+  scheduleCard: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderColor: '#E6DCCD',
-    borderRadius: 14,
-    paddingVertical: 12,
-    alignItems: 'center',
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 8 : 14,
+    overflow: 'hidden',
   },
-  hourButtonSelected: {
-    backgroundColor: '#3E8E5E',
-    borderColor: '#3E8E5E',
+  scheduleBlock: {
+    paddingVertical: 4,
   },
-  hourText: {
+  scheduleDivider: {
+    height: 1,
+    backgroundColor: '#E6DCCD',
+    marginVertical: 8,
+  },
+  scheduleLabel: {
     fontFamily: 'Figtree_600SemiBold',
-    fontSize: 15,
-    color: '#2A2420',
+    fontSize: 13,
+    color: '#6B6058',
+    marginBottom: 4,
   },
-  hourTextSelected: {
-    color: '#FFFFFF',
+  scheduleConfirm: {
+    fontFamily: 'Figtree_500Medium',
+    fontSize: 13,
+    color: '#2F6E48',
+    marginTop: 12,
+    textAlign: 'center',
+  },
+  iosDatePicker: {
+    width: '100%',
+    height: 150,
+  },
+  iosTimePicker: {
+    width: '100%',
+    height: 150,
+  },
+  androidPickerButton: {
+    backgroundColor: '#F7F2EA',
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  androidPickerMain: {
+    fontFamily: 'BricolageGrotesque_700Bold',
+    fontSize: 22,
+    color: '#2A2420',
+    textAlign: 'center',
+  },
+  androidPickerHint: {
+    fontFamily: 'Figtree_400Regular',
+    fontSize: 13,
+    color: '#6B6058',
+    marginTop: 4,
   },
   errorText: {
     fontFamily: 'Figtree_400Regular',
     fontSize: 13,
     color: '#B4472B',
-    marginTop: 6,
+    marginTop: 8,
   },
   noteInput: {
     backgroundColor: '#FFFFFF',
@@ -392,4 +515,3 @@ const styles = StyleSheet.create({
     color: '#2A2420',
   },
 });
-

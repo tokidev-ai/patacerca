@@ -7,4 +7,3 @@ export interface IVerificationRepository {
   submitForReview(walkerId: string): Promise<WalkerStatus>;
   simulateApproval(walkerId: string): Promise<WalkerStatus>;
 }
-

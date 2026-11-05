@@ -1,12 +1,7 @@
 import { PetSize } from './owner.model';
 
 export type WalkRequestStatus =
-  | 'pending'
-  | 'accepted'
-  | 'rejected'
-  | 'cancelled'
-  | 'completed'
-  | 'confirmed';
+  'pending' | 'accepted' | 'rejected' | 'cancelled' | 'completed' | 'confirmed';
 
 export interface WalkRequest {
   id: string;
@@ -28,4 +23,3 @@ export interface WalkRequest {
   createdAt: number;
   updatedAt?: number;
 }
-

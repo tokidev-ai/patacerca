@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-import {
-  TextInput,
-  TextInputProps,
-  StyleSheet,
-  View,
-  Text,
-} from 'react-native';
+import { TextInput, TextInputProps, StyleSheet, View, Text } from 'react-native';
 
 export interface InputProps extends TextInputProps {
   error?: string;
@@ -84,4 +78,3 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
 });
-

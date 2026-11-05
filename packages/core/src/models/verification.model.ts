@@ -17,4 +17,3 @@ export interface VerificationStepState {
   description: string;
   isCompleted: boolean;
 }
-

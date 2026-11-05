@@ -3,4 +3,3 @@ import { RequestWalkModal } from '../../src/features/requests/screens/RequestWal
 export default function RequestWalkRoute() {
   return <RequestWalkModal />;
 }
-

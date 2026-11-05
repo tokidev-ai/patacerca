@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  TextInput,
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-} from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
 
 export interface ChatInputProps {
   onSend: (text: string) => void;
@@ -85,4 +79,3 @@ const styles = StyleSheet.create({
     fontFamily: 'Figtree_600SemiBold',
   },
 });
-

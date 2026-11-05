@@ -17,4 +17,3 @@ export interface Owner {
   pets?: Pet[];
   createdAt: number;
 }
-

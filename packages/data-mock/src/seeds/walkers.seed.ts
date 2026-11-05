@@ -228,4 +228,3 @@ export const INITIAL_WALKERS: Walker[] = [
     timeSlots: ['Mañana', 'Tarde'],
   },
 ];
-

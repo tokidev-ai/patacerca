@@ -1,15 +1,7 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Button, IconButton, OtpInput } from '@patacerca/ui';
+import { Button, IconButton, OtpInput, FormScreenLayout } from '@patacerca/ui';
 import { APP_STRINGS } from '@patacerca/core';
 import { useWalkerData } from '../../../providers/DataProvider';
 import { useWalkerSessionStore } from '../../../store/session.store';
@@ -62,73 +54,38 @@ export const CodeScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.container}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.header}>
-            <IconButton icon="back" onPress={handleBack} />
-          </View>
+    <FormScreenLayout
+      footer={
+        <Button title="Verificar" onPress={handleVerify} loading={loading} size="lg" />
+      }
+    >
+      <View style={styles.header}>
+        <IconButton icon="back" onPress={handleBack} />
+      </View>
 
-          <View style={styles.content}>
-            <Text style={styles.title}>Ingresa el código</Text>
-            <Text style={styles.subtitle}>
-              Lo enviamos por WhatsApp al +591 {phone}.
-            </Text>
+      <Text style={styles.title}>Ingresa el código</Text>
+      <Text style={styles.subtitle}>Lo enviamos por WhatsApp al +591 {phone}.</Text>
 
-            <View style={styles.inputWrapper}>
-              <OtpInput
-                value={code}
-                onChangeText={(val) => {
-                  setCode(val);
-                  if (error) setError('');
-                }}
-                error={error}
-                autoFocus
-              />
-              <Text style={styles.hint}>Código de prueba: 1234</Text>
-            </View>
-          </View>
-
-          <View style={styles.bottomBar}>
-            <Button
-              title="Verificar"
-              onPress={handleVerify}
-              loading={loading}
-              size="lg"
-            />
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      <View style={styles.inputWrapper}>
+        <OtpInput
+          value={code}
+          onChangeText={(val) => {
+            setCode(val);
+            if (error) setError('');
+          }}
+          error={error}
+          autoFocus
+        />
+        <Text style={styles.hint}>Código de prueba: 1234</Text>
+      </View>
+    </FormScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F7F2EA',
-  },
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    justifyContent: 'space-between',
-  },
   header: {
     paddingTop: 12,
     marginBottom: 20,
-  },
-  content: {
-    flex: 1,
   },
   title: {
     fontFamily: 'BricolageGrotesque_700Bold',
@@ -156,8 +113,4 @@ const styles = StyleSheet.create({
     marginTop: 12,
     textAlign: 'center',
   },
-  bottomBar: {
-    paddingVertical: 24,
-  },
 });
-

@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  TouchableOpacity,
-  Text,
-  TouchableOpacityProps,
-  StyleSheet,
-} from 'react-native';
+import { TouchableOpacity, Text, TouchableOpacityProps, StyleSheet } from 'react-native';
 
 export interface ChipProps extends TouchableOpacityProps {
   label: string;
@@ -30,12 +25,7 @@ export const Chip: React.FC<ChipProps> = ({
       ]}
       {...props}
     >
-      <Text
-        style={[
-          styles.text,
-          selected ? styles.selectedText : styles.unselectedText,
-        ]}
-      >
+      <Text style={[styles.text, selected ? styles.selectedText : styles.unselectedText]}>
         {label}
       </Text>
     </TouchableOpacity>
@@ -78,4 +68,3 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 });
-

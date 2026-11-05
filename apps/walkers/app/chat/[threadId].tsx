@@ -3,4 +3,3 @@ import { WalkerChatScreen } from '../../src/features/chat/screens/WalkerChatScre
 export default function WalkerChatRoute() {
   return <WalkerChatScreen />;
 }
-

@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-} from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
@@ -32,9 +27,7 @@ export const WelcomeScreen: React.FC = () => {
             </Text>
           </View>
 
-          <Text style={styles.title}>
-            Gana dinero paseando perros en tu barrio
-          </Text>
+          <Text style={styles.title}>Gana dinero paseando perros en tu barrio</Text>
           <Text style={styles.subtitle}>
             Tú eliges tus horarios. Clientes cerca de tu casa.
           </Text>
@@ -118,4 +111,3 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
-

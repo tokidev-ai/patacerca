@@ -48,15 +48,11 @@ export default function TabsLayout() {
                 badgeCount={newCount}
                 onPress={() => goToTab(0, 'requests')}
               />
-              <TabBarItem
-                label="Mensajes"
-                focused={state.index === 1}
-                onPress={() => goToTab(1, 'messages')}
-              />
+              {/* Mensajes: pantalla aún no en uso — coordinación vía WhatsApp */}
               <TabBarItem
                 label="Perfil"
-                focused={state.index === 2}
-                onPress={() => goToTab(2, 'profile')}
+                focused={state.index === 1}
+                onPress={() => goToTab(1, 'profile')}
               />
             </View>
           </View>
@@ -64,8 +60,8 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen name="requests" />
-      <Tabs.Screen name="messages" />
       <Tabs.Screen name="profile" />
+      <Tabs.Screen name="messages" options={{ href: null }} />
     </Tabs>
   );
 }
@@ -82,4 +78,3 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFCF7',
   },
 });
-

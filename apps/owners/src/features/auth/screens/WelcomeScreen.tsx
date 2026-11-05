@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-} from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
@@ -29,9 +24,7 @@ export const WelcomeScreen: React.FC = () => {
             <View style={styles.logoDot} />
             <Text style={styles.logoText}>patacerca</Text>
           </View>
-          <Text style={styles.title}>
-            Paseadores verificados a pocas cuadras
-          </Text>
+          <Text style={styles.title}>Paseadores verificados a pocas cuadras</Text>
           <Text style={styles.subtitle}>
             Encuentra a alguien de confianza en tu barrio de Cochabamba.
           </Text>
@@ -110,4 +103,3 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
-

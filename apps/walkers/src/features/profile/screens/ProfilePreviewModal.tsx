@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  Modal,
-  View,
-  Text,
-  StyleSheet,
-  TouchableWithoutFeedback,
-} from 'react-native';
+import { Modal, View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import { Avatar, VerifiedBadge, Button } from '@patacerca/ui';
 import { Walker, WalkerStatus } from '@patacerca/core';
 
@@ -31,12 +25,7 @@ export const ProfilePreviewModal: React.FC<ProfilePreviewModalProps> = ({
   const zone = walker?.zone || 'Cochabamba';
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
           <TouchableWithoutFeedback>
@@ -45,19 +34,13 @@ export const ProfilePreviewModal: React.FC<ProfilePreviewModalProps> = ({
 
               {/* Simulated Card from Owners App */}
               <View style={styles.card}>
-                <Avatar
-                  name={name}
-                  colorName={walker?.colorName || 'green'}
-                  size={56}
-                />
+                <Avatar name={name} colorName={walker?.colorName || 'green'} size={56} />
                 <View style={styles.cardInfo}>
                   <View style={styles.nameRow}>
                     <Text style={styles.walkerName}>{name}</Text>
                     {isApproved && <VerifiedBadge size={16} />}
                   </View>
-                  <Text style={styles.walkerSubtitle}>
-                    {zone} · a pocas cuadras
-                  </Text>
+                  <Text style={styles.walkerSubtitle}>{zone} · a pocas cuadras</Text>
                   <Text style={styles.badgeText}>Nuevo en Patacerca</Text>
                 </View>
                 <View style={styles.priceCol}>
@@ -78,19 +61,13 @@ export const ProfilePreviewModal: React.FC<ProfilePreviewModalProps> = ({
               {!isApproved && (
                 <View style={styles.warningBox}>
                   <Text style={styles.warningText}>
-                    Aparecerás en búsquedas cuando tu verificación esté
-                    aprobada.
+                    Aparecerás en búsquedas cuando tu verificación esté aprobada.
                   </Text>
                 </View>
               )}
 
               <View style={styles.buttonWrapper}>
-                <Button
-                  title="Cerrar"
-                  variant="primary"
-                  onPress={onClose}
-                  size="md"
-                />
+                <Button title="Cerrar" variant="primary" onPress={onClose} size="md" />
               </View>
             </View>
           </TouchableWithoutFeedback>
@@ -197,4 +174,3 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 });
-

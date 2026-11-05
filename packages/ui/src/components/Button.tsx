@@ -144,4 +144,3 @@ const styles = StyleSheet.create({
     color: '#8A7D70',
   },
 });
-

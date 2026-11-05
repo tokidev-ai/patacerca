@@ -1,19 +1,11 @@
-import {
-  IChatRepository,
-  ChatThread,
-  ChatMessage,
-  APP_STRINGS,
-} from '@patacerca/core';
+import { IChatRepository, ChatThread, ChatMessage, APP_STRINGS } from '@patacerca/core';
 import { mockStorage } from '../storage/mock-storage';
 
 const CHAT_THREADS_STORAGE_KEY = '@patacerca:chat_threads';
 
 export class MockChatRepository implements IChatRepository {
   private async getStoredThreads(): Promise<Record<string, ChatThread>> {
-    return mockStorage.getItem<Record<string, ChatThread>>(
-      CHAT_THREADS_STORAGE_KEY,
-      {}
-    );
+    return mockStorage.getItem<Record<string, ChatThread>>(CHAT_THREADS_STORAGE_KEY, {});
   }
 
   private getThreadKey(ownerPhone: string, walkerId: string): string {
@@ -126,4 +118,3 @@ export class MockChatRepository implements IChatRepository {
     return message;
   }
 }
-

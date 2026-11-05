@@ -1,11 +1,24 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  View,
+  Image,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
+import { AppIcon } from './AppIcon';
 
 export interface UploadTileProps {
   label: string;
   isUploaded: boolean;
   onPress: () => void;
   aspectRatio?: number;
+  previewUri?: string | null;
+  /** Resalta borde cuando falta en un intento de guardar */
+  highlightMissing?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const UploadTile: React.FC<UploadTileProps> = ({
@@ -13,7 +26,12 @@ export const UploadTile: React.FC<UploadTileProps> = ({
   isUploaded,
   onPress,
   aspectRatio = 4 / 3,
+  previewUri,
+  highlightMissing = false,
+  style,
 }) => {
+  const showPreview = Boolean(previewUri);
+
   return (
     <TouchableOpacity
       activeOpacity={0.7}
@@ -22,25 +40,38 @@ export const UploadTile: React.FC<UploadTileProps> = ({
         styles.container,
         { aspectRatio },
         isUploaded ? styles.uploadedContainer : styles.emptyContainer,
+        highlightMissing && !isUploaded && styles.missingContainer,
+        style,
       ]}
     >
+      {showPreview ? (
+        <>
+          <Image
+            source={{ uri: previewUri! }}
+            style={styles.previewImage}
+            resizeMode="cover"
+          />
+          <View style={styles.previewOverlay} />
+        </>
+      ) : null}
       <View style={styles.content}>
         <Text
           style={[
             styles.label,
             isUploaded ? styles.uploadedText : styles.emptyText,
+            showPreview && styles.labelOnPreview,
           ]}
         >
           {label}
         </Text>
-        <Text
-          style={[
-            styles.subtext,
-            isUploaded ? styles.uploadedText : styles.emptySubtext,
-          ]}
-        >
-          {isUploaded ? '✓ Cargado' : 'Tocar para subir'}
-        </Text>
+        {isUploaded ? (
+          <View style={styles.uploadedRow}>
+            <AppIcon name="check" size={14} color="#2F6E48" />
+            <Text style={[styles.subtext, styles.uploadedText]}>Cargado</Text>
+          </View>
+        ) : (
+          <Text style={[styles.subtext, styles.emptySubtext]}>Tocar para subir</Text>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -53,6 +84,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 12,
+    overflow: 'hidden',
   },
   emptyContainer: {
     backgroundColor: '#F7F2EA',
@@ -64,9 +96,21 @@ const styles = StyleSheet.create({
     borderColor: '#3E8E5E',
     borderStyle: 'solid',
   },
+  missingContainer: {
+    borderColor: '#B4472B',
+    backgroundColor: '#FBF0EC',
+  },
+  previewImage: {
+    ...StyleSheet.absoluteFill,
+  },
+  previewOverlay: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(42, 36, 32, 0.35)',
+  },
   content: {
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 1,
   },
   label: {
     fontFamily: 'Figtree_600SemiBold',
@@ -74,10 +118,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 4,
   },
+  labelOnPreview: {
+    color: '#FFFCF7',
+  },
   subtext: {
     fontFamily: 'Figtree_400Regular',
     fontSize: 12,
     textAlign: 'center',
+  },
+  uploadedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   emptyText: {
     color: '#2A2420',
@@ -89,4 +141,3 @@ const styles = StyleSheet.create({
     color: '#2F6E48',
   },
 });
-

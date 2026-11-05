@@ -7,25 +7,16 @@ export interface ChatBubbleProps {
   time?: string;
 }
 
-export const ChatBubble: React.FC<ChatBubbleProps> = ({
-  text,
-  isSelf,
-  time,
-}) => {
+export const ChatBubble: React.FC<ChatBubbleProps> = ({ text, isSelf, time }) => {
   return (
     <View
-      style={[
-        styles.container,
-        isSelf ? styles.selfContainer : styles.otherContainer,
-      ]}
+      style={[styles.container, isSelf ? styles.selfContainer : styles.otherContainer]}
     >
       <Text style={[styles.text, isSelf ? styles.selfText : styles.otherText]}>
         {text}
       </Text>
       {Boolean(time) && (
-        <Text
-          style={[styles.time, isSelf ? styles.selfTime : styles.otherTime]}
-        >
+        <Text style={[styles.time, isSelf ? styles.selfTime : styles.otherTime]}>
           {time}
         </Text>
       )}
@@ -77,4 +68,3 @@ const styles = StyleSheet.create({
     color: 'rgba(107, 96, 88, 0.75)',
   },
 });
-

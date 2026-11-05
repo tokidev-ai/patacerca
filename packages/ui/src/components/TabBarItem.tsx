@@ -15,11 +15,7 @@ export const TabBarItem: React.FC<TabBarItemProps> = ({
   badgeCount,
 }) => {
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      onPress={onPress}
-      style={styles.container}
-    >
+    <TouchableOpacity activeOpacity={0.7} onPress={onPress} style={styles.container}>
       <View
         style={[
           styles.indicator,
@@ -28,10 +24,7 @@ export const TabBarItem: React.FC<TabBarItemProps> = ({
       />
       <View style={styles.labelRow}>
         <Text
-          style={[
-            styles.label,
-            focused ? styles.labelFocused : styles.labelUnfocused,
-          ]}
+          style={[styles.label, focused ? styles.labelFocused : styles.labelUnfocused]}
         >
           {label}
         </Text>
@@ -93,4 +86,3 @@ const styles = StyleSheet.create({
     fontFamily: 'Figtree_600SemiBold',
   },
 });
-

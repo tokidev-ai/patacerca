@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Linking,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -17,6 +10,7 @@ import {
   Stat,
   Card,
   VerifiedBadge,
+  WhatsAppButton,
 } from '@patacerca/ui';
 import { avatarColors } from '@patacerca/theme';
 import { useData } from '../../../providers/DataProvider';
@@ -45,12 +39,7 @@ export const WalkerDetailScreen: React.FC = () => {
   const colorConfig =
     avatarColors.find((c) => c.name === walker.colorName) || avatarColors[0]!;
 
-  const handleOpenWhatsApp = () => {
-    const text = encodeURIComponent(
-      `¡Hola ${walker.name}! Te encontré en Patacerca y me gustaría consultar por paseos.`
-    );
-    Linking.openURL(`https://wa.me/591${walker.phone}?text=${text}`);
-  };
+  const whatsAppMessage = `¡Hola ${walker.name}! Te encontré en Patacerca y me gustaría consultar por paseos.`;
 
   const handleBack = () => {
     if (router.canGoBack()) {
@@ -67,24 +56,14 @@ export const WalkerDetailScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
       >
         {/* Header with walker color */}
-        <View
-          style={[styles.headerContainer, { backgroundColor: colorConfig.bg }]}
-        >
+        <View style={[styles.headerContainer, { backgroundColor: colorConfig.bg }]}>
           <SafeAreaView edges={['top', 'left', 'right']}>
             <View style={styles.navBar}>
-              <IconButton
-                icon="back"
-                variant="translucent"
-                onPress={handleBack}
-              />
+              <IconButton icon="back" variant="translucent" onPress={handleBack} />
             </View>
 
             <View style={styles.headerInfo}>
-              <Avatar
-                name={walker.name}
-                colorName={walker.colorName}
-                size={80}
-              />
+              <Avatar name={walker.name} colorName={walker.colorName} size={80} />
               <Text style={styles.headerName}>{walker.name}</Text>
               <Text style={styles.headerSubtitle}>
                 {walker.zone} · {walker.distanceText}
@@ -135,18 +114,14 @@ export const WalkerDetailScreen: React.FC = () => {
 
           {/* Verified by Patacerca Card */}
           <Card variant="accentSoft" style={styles.verifiedCard}>
-            <Text style={styles.verifiedCardTitle}>
-              Verificado por Patacerca
-            </Text>
+            <Text style={styles.verifiedCardTitle}>Verificado por Patacerca</Text>
             <View style={styles.checkItem}>
               <Text style={styles.greenCheck}>✓</Text>
               <Text style={styles.checkText}>Identidad confirmada con carnet</Text>
             </View>
             <View style={styles.checkItem}>
               <Text style={styles.greenCheck}>✓</Text>
-              <Text style={styles.checkText}>
-                Certificado de antecedentes revisado
-              </Text>
+              <Text style={styles.checkText}>Certificado de antecedentes revisado</Text>
             </View>
             <View style={styles.checkItem}>
               <Text style={styles.greenCheck}>✓</Text>
@@ -154,9 +129,7 @@ export const WalkerDetailScreen: React.FC = () => {
             </View>
             <View style={styles.checkItem}>
               <Text style={styles.greenCheck}>✓</Text>
-              <Text style={styles.checkText}>
-                Entrevista personal con el equipo
-              </Text>
+              <Text style={styles.checkText}>Entrevista personal con el equipo</Text>
             </View>
           </Card>
 
@@ -169,9 +142,7 @@ export const WalkerDetailScreen: React.FC = () => {
                   <Text style={styles.reviewAuthor}>
                     {rev.authorName} · {rev.zone}
                   </Text>
-                  <Text style={styles.reviewStars}>
-                    {'★'.repeat(rev.rating)}
-                  </Text>
+                  <Text style={styles.reviewStars}>{'★'.repeat(rev.rating)}</Text>
                 </View>
                 <Text style={styles.reviewComment}>{rev.comment}</Text>
               </View>
@@ -183,11 +154,11 @@ export const WalkerDetailScreen: React.FC = () => {
       {/* Bottom Action Bar */}
       <SafeAreaView edges={['bottom', 'left', 'right']} style={styles.bottomBarSafeArea}>
         <View style={styles.bottomBar}>
-          <Button
-            title="Escribir"
-            variant="outline"
-            style={styles.writeButton}
-            onPress={() => router.push(`/chat/${walker.id}`)}
+          <WhatsAppButton
+            phone={walker.phone}
+            message={whatsAppMessage}
+            size={52}
+            style={styles.whatsAppButton}
           />
           <Button
             title="Solicitar paseo"
@@ -370,11 +341,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     gap: 12,
   },
-  writeButton: {
-    flex: 1,
+  whatsAppButton: {
+    flexShrink: 0,
   },
   requestButton: {
-    flex: 1.4,
+    flex: 1,
   },
 });
-

@@ -3,12 +3,9 @@ import { cleanBolivianPhone, isValidBolivianPhone } from '../rules/formatting.ru
 import { APP_STRINGS } from '../constants/strings.constant';
 
 export const phoneSchema = z.object({
-  phone: z
-    .string()
-    .transform(cleanBolivianPhone)
-    .refine(isValidBolivianPhone, {
-      message: APP_STRINGS.errors.invalidBolivianPhone,
-    }),
+  phone: z.string().transform(cleanBolivianPhone).refine(isValidBolivianPhone, {
+    message: APP_STRINGS.errors.invalidBolivianPhone,
+  }),
 });
 
 export type PhoneFormData = z.infer<typeof phoneSchema>;
@@ -23,4 +20,3 @@ export const otpSchema = z.object({
 });
 
 export type OtpFormData = z.infer<typeof otpSchema>;
-

@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Button, Input, Chip, Field } from '@patacerca/ui';
+import {
+  Button,
+  Input,
+  Chip,
+  Field,
+  FormScreenLayout,
+  SearchableOptionList,
+} from '@patacerca/ui';
 import {
   COCHABAMBA_ZONES,
   DEFAULT_ZONE,
@@ -71,115 +70,82 @@ export const OnboardingScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.container}
+    <FormScreenLayout
+      footer={
+        <Button title="Crear cuenta" onPress={handleSubmit} loading={loading} size="lg" />
+      }
+    >
+      <Text style={styles.eyebrow}>Crea tu cuenta</Text>
+      <Text style={styles.title}>Cuéntanos de ti y tu perro</Text>
+
+      <Field label="Tu nombre" error={error && !name.trim() ? error : undefined}>
+        <Input
+          placeholder="Nombre y apellido"
+          value={name}
+          onChangeText={(val) => {
+            setName(val);
+            if (error) setError('');
+          }}
+        />
+      </Field>
+
+      <View style={styles.fieldSection}>
+        <Text style={styles.fieldLabel}>Tu zona en Cochabamba</Text>
+        <Text style={styles.fieldHint}>Busca y elige tu barrio</Text>
+        <SearchableOptionList
+          options={COCHABAMBA_ZONES}
+          value={zone}
+          onChange={setZone}
+          searchPlaceholder="Buscar barrio…"
+          maxListHeight={200}
+        />
+      </View>
+
+      <Field
+        label="¿Cómo se llama tu perro?"
+        error={error && !dogName.trim() ? error : undefined}
       >
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles.scrollContent}
-        >
-          <Text style={styles.eyebrow}>Crea tu cuenta</Text>
-          <Text style={styles.title}>Cuéntanos de ti y tu perro</Text>
+        <Input
+          placeholder="Ej. Toby"
+          value={dogName}
+          onChangeText={(val) => {
+            setDogName(val);
+            if (error) setError('');
+          }}
+        />
+      </Field>
 
-          <Field label="Tu nombre" error={error && !name.trim() ? error : undefined}>
-            <Input
-              placeholder="Nombre y apellido"
-              value={name}
-              onChangeText={(val) => {
-                setName(val);
-                if (error) setError('');
-              }}
-            />
-          </Field>
-
-          <View style={styles.fieldSection}>
-            <Text style={styles.fieldLabel}>Tu zona en Cochabamba</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.horizontalChips}
-            >
-              {COCHABAMBA_ZONES.map((z) => (
-                <Chip
-                  key={z}
-                  label={z}
-                  selected={zone === z}
-                  onPress={() => setZone(z)}
-                />
-              ))}
-            </ScrollView>
-          </View>
-
-          <Field
-            label="¿Cómo se llama tu perro?"
-            error={error && !dogName.trim() ? error : undefined}
-          >
-            <Input
-              placeholder="Ej. Toby"
-              value={dogName}
-              onChangeText={(val) => {
-                setDogName(val);
-                if (error) setError('');
-              }}
-            />
-          </Field>
-
-          <View style={styles.fieldSection}>
-            <Text style={styles.fieldLabel}>Tamaño del perro</Text>
-            <View style={styles.sizeChipsRow}>
-              <Chip
-                label="Pequeño"
-                selected={dogSize === 'small'}
-                onPress={() => setDogSize('small')}
-              />
-              <Chip
-                label="Mediano"
-                selected={dogSize === 'medium'}
-                onPress={() => setDogSize('medium')}
-              />
-              <Chip
-                label="Grande"
-                selected={dogSize === 'large'}
-                onPress={() => setDogSize('large')}
-              />
-            </View>
-          </View>
-        </ScrollView>
-
-        <View style={styles.bottomBar}>
-          <Button
-            title="Crear cuenta"
-            onPress={handleSubmit}
-            loading={loading}
-            size="lg"
+      <View style={styles.fieldSection}>
+        <Text style={styles.fieldLabel}>Tamaño del perro</Text>
+        <View style={styles.sizeChipsRow}>
+          <Chip
+            label="Pequeño"
+            selected={dogSize === 'small'}
+            onPress={() => setDogSize('small')}
+          />
+          <Chip
+            label="Mediano"
+            selected={dogSize === 'medium'}
+            onPress={() => setDogSize('medium')}
+          />
+          <Chip
+            label="Grande"
+            selected={dogSize === 'large'}
+            onPress={() => setDogSize('large')}
           />
         </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      </View>
+    </FormScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F7F2EA',
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 24,
-  },
-  scrollContent: {
-    paddingTop: 24,
-    paddingBottom: 24,
-  },
   eyebrow: {
     fontSize: 13,
     fontFamily: 'Figtree_600SemiBold',
     color: '#3E8E5E',
     marginBottom: 4,
+    marginTop: 24,
   },
   title: {
     fontFamily: 'BricolageGrotesque_700Bold',
@@ -196,18 +162,17 @@ const styles = StyleSheet.create({
     fontFamily: 'Figtree_600SemiBold',
     fontSize: 15,
     color: '#2A2420',
-    marginBottom: 8,
+    marginBottom: 4,
   },
-  horizontalChips: {
-    gap: 8,
-    paddingVertical: 2,
+  fieldHint: {
+    fontFamily: 'Figtree_400Regular',
+    fontSize: 13,
+    color: '#6B6058',
+    marginBottom: 10,
+    lineHeight: 18,
   },
   sizeChipsRow: {
     flexDirection: 'row',
     gap: 8,
   },
-  bottomBar: {
-    paddingVertical: 20,
-  },
 });
-

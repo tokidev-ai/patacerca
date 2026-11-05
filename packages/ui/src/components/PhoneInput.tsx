@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TextInputProps,
-  StyleSheet,
-} from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, Text, TextInput, TextInputProps, StyleSheet } from 'react-native';
+import { cleanBolivianPhone } from '@patacerca/core';
 
-export interface PhoneInputProps extends Omit<TextInputProps, 'onChangeText'> {
+function cleanPhoneDigits(text: string): string {
+  return cleanBolivianPhone(text).slice(0, 8);
+}
+
+export interface PhoneInputProps extends Omit<TextInputProps, 'onChangeText' | 'value'> {
+  /** Dígitos iniciales (8 max, sin +591). Solo define el valor al montar; luego manda el estado interno. */
   value: string;
-  onChangeText: (text: string) => void;
+  onChangeText: (digits: string) => void;
   error?: string;
+  /** Cambia la key del TextInput para resetear (p. ej. al reabrir un modal). */
+  remountKey?: string | number;
 }
 
 export const PhoneInput: React.FC<PhoneInputProps> = ({
@@ -18,15 +20,21 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
   onChangeText,
   error,
   style,
+  remountKey,
+  autoComplete = 'off',
+  textContentType = 'none',
+  importantForAutofill = 'no',
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
-  const handleChange = (text: string) => {
-    // only numeric, max 8 digits
-    const cleaned = text.replace(/\D/g, '').slice(0, 8);
-    onChangeText(cleaned);
-  };
+  const handleChange = useCallback(
+    (text: string) => {
+      const cleaned = cleanPhoneDigits(text);
+      onChangeText(cleaned);
+    },
+    [onChangeText]
+  );
 
   return (
     <View style={styles.wrapper}>
@@ -41,21 +49,63 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
         <View style={styles.prefixContainer}>
           <Text style={styles.prefixText}>BO +591</Text>
         </View>
-        <TextInput
-          value={value}
-          onChangeText={handleChange}
-          keyboardType="phone-pad"
-          maxLength={8}
-          placeholder="7XX XX XXX"
-          placeholderTextColor="#8A7D70"
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          style={styles.input}
+        <PhoneInputField
+          key={remountKey ?? 'phone'}
+          initialDigits={cleanPhoneDigits(value)}
+          onDigitsChange={handleChange}
+          isFocused={isFocused}
+          setIsFocused={setIsFocused}
+          error={error}
+          autoComplete={autoComplete}
+          textContentType={textContentType}
+          importantForAutofill={importantForAutofill}
           {...props}
         />
       </View>
       {Boolean(error) && <Text style={styles.errorText}>{error}</Text>}
     </View>
+  );
+};
+
+type PhoneInputFieldProps = Omit<
+  TextInputProps,
+  'value' | 'defaultValue' | 'onChangeText' | 'onFocus' | 'onBlur'
+> & {
+  initialDigits: string;
+  onDigitsChange: (text: string) => void;
+  isFocused: boolean;
+  setIsFocused: (focused: boolean) => void;
+  error?: string;
+};
+
+/** TextInput no controlado por el padre (defaultValue): evita que el dígito desaparezca al re-renderizar. */
+const PhoneInputField: React.FC<PhoneInputFieldProps> = ({
+  initialDigits,
+  onDigitsChange,
+  setIsFocused,
+  ...props
+}) => {
+  const [digits, setDigits] = useState(initialDigits);
+
+  const handleChange = (text: string) => {
+    const cleaned = cleanPhoneDigits(text);
+    setDigits(cleaned);
+    onDigitsChange(cleaned);
+  };
+
+  return (
+    <TextInput
+      value={digits}
+      onChangeText={handleChange}
+      keyboardType="number-pad"
+      placeholder="Ej. 71234567"
+      placeholderTextColor="#8A7D70"
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
+      style={styles.input}
+      maxLength={8}
+      {...props}
+    />
   );
 };
 
@@ -80,6 +130,7 @@ const styles = StyleSheet.create({
     borderRightColor: '#E6DCCD',
     justifyContent: 'center',
     alignItems: 'center',
+    flexShrink: 0,
   },
   prefixText: {
     fontFamily: 'Figtree_600SemiBold',
@@ -88,6 +139,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    minWidth: 0,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 18,
@@ -107,4 +159,3 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
 });
-

@@ -8,11 +8,7 @@ export interface StatusPillProps {
   variant?: 'pending' | 'accepted' | 'rejected' | 'cancelled' | 'verified';
 }
 
-export const StatusPill: React.FC<StatusPillProps> = ({
-  status,
-  label,
-  variant,
-}) => {
+export const StatusPill: React.FC<StatusPillProps> = ({ status, label, variant }) => {
   const getStyleAndText = () => {
     if (variant === 'verified') {
       return {
@@ -36,8 +32,8 @@ export const StatusPill: React.FC<StatusPillProps> = ({
             (currentStatus === 'completed'
               ? 'Completado'
               : currentStatus === 'confirmed'
-              ? 'Finalizado'
-              : 'Aceptada'),
+                ? 'Finalizado'
+                : 'Aceptada'),
         };
       case 'rejected':
         return {
@@ -82,4 +78,3 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 });
-

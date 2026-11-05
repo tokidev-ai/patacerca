@@ -11,7 +11,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { Avatar, Button, IconButton, Chip } from '@patacerca/ui';
+import {
+  Avatar,
+  Button,
+  IconButton,
+  Chip,
+  SearchableOptionListMulti,
+} from '@patacerca/ui';
 import {
   COCHABAMBA_ZONES,
   WEEK_DAYS,
@@ -26,10 +32,8 @@ import { ProfilePreviewModal } from './ProfilePreviewModal';
 
 export const WalkerProfileScreen: React.FC = () => {
   const router = useRouter();
-  const { authRepository, verificationRepository, walkersRepository } =
-    useWalkerData();
-  const { walker, phone, status, clearSession, updateWalker } =
-    useWalkerSessionStore();
+  const { authRepository, verificationRepository, walkersRepository } = useWalkerData();
+  const { walker, phone, status, clearSession, updateWalker } = useWalkerSessionStore();
   const { showToast } = useToastStore();
 
   const [previewVisible, setPreviewVisible] = useState(false);
@@ -62,16 +66,6 @@ export const WalkerProfileScreen: React.FC = () => {
 
   const handlePriceInc = () => {
     if (price30 < 30) setPrice30((p) => p + 1);
-  };
-
-  const toggleZone = (z: string) => {
-    if (selectedZones.includes(z)) {
-      if (selectedZones.length > 1) {
-        setSelectedZones(selectedZones.filter((item) => item !== z));
-      }
-    } else {
-      setSelectedZones([...selectedZones, z]);
-    }
   };
 
   const toggleDay = (d: string) => {
@@ -135,10 +129,7 @@ export const WalkerProfileScreen: React.FC = () => {
       >
         <View style={styles.headerRow}>
           <Text style={styles.title}>Mi perfil</Text>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => setPreviewVisible(true)}
-          >
+          <TouchableOpacity activeOpacity={0.7} onPress={() => setPreviewVisible(true)}>
             <Text style={styles.previewLink}>Vista previa</Text>
           </TouchableOpacity>
         </View>
@@ -171,8 +162,8 @@ export const WalkerProfileScreen: React.FC = () => {
                 {status === 'approved'
                   ? '✓ Paseador verificado'
                   : status === 'in_review'
-                  ? 'Verificación en revisión'
-                  : 'Sin verificar'}
+                    ? 'Verificación en revisión'
+                    : 'Sin verificar'}
               </Text>
             </View>
           </View>
@@ -186,9 +177,7 @@ export const WalkerProfileScreen: React.FC = () => {
         >
           <Text style={styles.verificationLabel}>Verificación de cuenta</Text>
           <Text style={styles.verificationCount}>
-            {status === 'approved'
-              ? '4/4 Completo →'
-              : `${completedSteps}/4 Pasos →`}
+            {status === 'approved' ? '4/4 Completo →' : `${completedSteps}/4 Pasos →`}
           </Text>
         </TouchableOpacity>
 
@@ -228,31 +217,24 @@ export const WalkerProfileScreen: React.FC = () => {
               disabled={price30 >= 30}
             />
           </View>
-          <Text style={styles.calculated60Text}>
-            60 min: {price60} Bs
-          </Text>
-          <Text style={styles.priceHelp}>
-            Rango sugerido en Cochabamba: 15 a 50 Bs
-          </Text>
+          <Text style={styles.calculated60Text}>60 min: {price60} Bs</Text>
+          <Text style={styles.priceHelp}>Rango sugerido en Cochabamba: 15 a 50 Bs</Text>
         </View>
 
         {/* Zones */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Zonas donde paseas</Text>
-          <View style={styles.chipsWrap}>
-            {COCHABAMBA_ZONES.map((z) => {
-              const isSelected = selectedZones.includes(z);
-              return (
-                <Chip
-                  key={z}
-                  label={z}
-                  selected={isSelected}
-                  onPress={() => toggleZone(z)}
-                  size="sm"
-                />
-              );
-            })}
-          </View>
+          <Text style={styles.sectionHint}>
+            Marca todas las zonas donde puedes pasear (mínimo una)
+          </Text>
+          <SearchableOptionListMulti
+            options={COCHABAMBA_ZONES}
+            values={selectedZones}
+            onChange={setSelectedZones}
+            searchPlaceholder="Buscar zona…"
+            maxListHeight={220}
+            minSelected={1}
+          />
         </View>
 
         {/* Days */}
@@ -296,12 +278,8 @@ export const WalkerProfileScreen: React.FC = () => {
         {/* Travel care toggle */}
         <View style={styles.travelCareRow}>
           <View style={styles.travelCareTextCol}>
-            <Text style={styles.travelCareTitle}>
-              Cuido perros durante viajes
-            </Text>
-            <Text style={styles.travelCareSubtitle}>
-              Próximamente en la app
-            </Text>
+            <Text style={styles.travelCareTitle}>Cuido perros durante viajes</Text>
+            <Text style={styles.travelCareSubtitle}>Próximamente en la app</Text>
           </View>
           <Switch
             value={travelCare}
@@ -431,7 +409,14 @@ const styles = StyleSheet.create({
     fontFamily: 'BricolageGrotesque_700Bold',
     fontSize: 18,
     color: '#2A2420',
+    marginBottom: 4,
+  },
+  sectionHint: {
+    fontFamily: 'Figtree_400Regular',
+    fontSize: 13,
+    color: '#6B6058',
     marginBottom: 10,
+    lineHeight: 18,
   },
   bioInput: {
     backgroundColor: '#FFFFFF',
@@ -516,4 +501,3 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 });
-

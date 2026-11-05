@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Modal,
   View,
@@ -6,10 +6,14 @@ import {
   StyleSheet,
   ScrollView,
   KeyboardAvoidingView,
-  Platform,
   TouchableOpacity,
-  TouchableWithoutFeedback,
+  Pressable,
+  Platform,
 } from 'react-native';
+import DateTimePicker, {
+  type DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Button,
   IconButton,
@@ -17,13 +21,27 @@ import {
   PhoneInput,
   UploadTile,
   Field,
+  keyboardAvoidingBehavior,
+  pickImageFromLibraryOrCamera,
 } from '@patacerca/ui';
 import {
   VerificationData,
-  INTERVIEW_SLOTS,
   APP_STRINGS,
   cleanBolivianPhone,
   isValidBolivianPhone,
+  clampInterviewScheduleDate,
+  clampInterviewTime,
+  formatInterviewSlotLabel,
+  formatInterviewSlotStored,
+  formatTimeHHmm,
+  formatWalkDayCalendar,
+  getDefaultInterviewTime,
+  getInterviewScheduleMaxDate,
+  getWalkScheduleMinDate,
+  INTERVIEW_SCHEDULE_MAX_DAYS_AHEAD,
+  initInterviewScheduleFromStored,
+  isInterviewScheduleInPast,
+  toWalkDayId,
 } from '@patacerca/core';
 import { useWalkerData } from '../../../providers/DataProvider';
 
@@ -36,6 +54,23 @@ export interface VerificationStepModalProps {
   onSaved: () => void;
 }
 
+function buildStep1Error(
+  ciNum: string,
+  idFrontUri: string | null,
+  idBackUri: string | null,
+  selfieUri: string | null
+): string {
+  const missing: string[] = [];
+  if (!ciNum.trim() || ciNum.trim().length < 5) {
+    missing.push('número de carnet (mín. 5 caracteres)');
+  }
+  if (!idFrontUri) missing.push('foto del anverso');
+  if (!idBackUri) missing.push('foto del reverso');
+  if (!selfieUri) missing.push('selfie con tu carnet');
+  if (missing.length === 0) return '';
+  return `Falta: ${missing.join(', ')}.`;
+}
+
 export const VerificationStepModal: React.FC<VerificationStepModalProps> = ({
   visible,
   step,
@@ -46,26 +81,89 @@ export const VerificationStepModal: React.FC<VerificationStepModalProps> = ({
 }) => {
   const { verificationRepository } = useWalkerData();
 
-  // Step 1 states
   const [ciNum, setCiNum] = useState(initialData?.nationalIdNumber || '');
-  const [ciF, setCiF] = useState(initialData?.idFrontUploaded || false);
-  const [ciB, setCiB] = useState(initialData?.idBackUploaded || false);
-  const [selfie, setSelfie] = useState(initialData?.selfieUploaded || false);
+  const [idFrontUri, setIdFrontUri] = useState<string | null>(
+    initialData?.idFrontUploaded ? 'saved' : null
+  );
+  const [idBackUri, setIdBackUri] = useState<string | null>(
+    initialData?.idBackUploaded ? 'saved' : null
+  );
+  const [selfieUri, setSelfieUri] = useState<string | null>(
+    initialData?.selfieUploaded ? 'saved' : null
+  );
 
-  // Step 2 states
-  const [antec, setAntec] = useState(initialData?.policeRecordUploaded || false);
+  const [antecUri, setAntecUri] = useState<string | null>(
+    initialData?.policeRecordUploaded ? 'saved' : null
+  );
 
-  // Step 3 states
   const [r1n, setR1n] = useState(initialData?.ref1Name || '');
   const [r1p, setR1p] = useState(initialData?.ref1Phone || '');
   const [r2n, setR2n] = useState(initialData?.ref2Name || '');
   const [r2p, setR2p] = useState(initialData?.ref2Phone || '');
 
-  // Step 4 states
-  const [slot, setSlot] = useState(initialData?.interviewSlot || '');
+  const interviewInit = useMemo(
+    () => initInterviewScheduleFromStored(initialData?.interviewSlot),
+    [initialData?.interviewSlot]
+  );
+  const [interviewDate, setInterviewDate] = useState(interviewInit.date);
+  const [interviewTime, setInterviewTime] = useState(interviewInit.time);
+  const [showAndroidDatePicker, setShowAndroidDatePicker] = useState(false);
+  const [showAndroidTimePicker, setShowAndroidTimePicker] = useState(false);
+
+  const scheduleMinDate = useMemo(() => getWalkScheduleMinDate(), []);
+  const scheduleMaxDate = useMemo(() => getInterviewScheduleMaxDate(), []);
+  const interviewDayId = toWalkDayId(interviewDate);
+  const interviewCalendarLabel = formatWalkDayCalendar(interviewDate);
+  const datePickerValue = useMemo(() => {
+    const d = new Date(interviewDate);
+    d.setHours(12, 0, 0, 0);
+    return d;
+  }, [interviewDate]);
 
   const [error, setError] = useState('');
+  const [showMissing, setShowMissing] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const applyInterviewDate = (next: Date) => {
+    const clamped = clampInterviewScheduleDate(next);
+    setInterviewDate(clamped);
+    const nextDayId = toWalkDayId(clamped);
+    setInterviewTime((prev) =>
+      isInterviewScheduleInPast(nextDayId, prev) ? getDefaultInterviewTime() : prev
+    );
+    if (error) setError('');
+  };
+
+  const handleInterviewDateChange = (event: DateTimePickerEvent, date?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowAndroidDatePicker(false);
+    }
+    if (event.type === 'dismissed' || !date) return;
+    applyInterviewDate(date);
+  };
+
+  const handleInterviewTimeChange = (event: DateTimePickerEvent, date?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowAndroidTimePicker(false);
+    }
+    if (event.type === 'dismissed' || !date) return;
+    const rounded = clampInterviewTime(date);
+    if (isInterviewScheduleInPast(interviewDayId, rounded)) {
+      setError('Elige una hora futura para este día');
+      return;
+    }
+    setInterviewTime(rounded);
+    if (error) setError('');
+  };
+
+  const pickIdPhoto = async (title: string, setter: (uri: string | null) => void) => {
+    const uri = await pickImageFromLibraryOrCamera(title);
+    if (uri) {
+      setter(uri);
+      setError('');
+      setShowMissing(false);
+    }
+  };
 
   const handleSave = async () => {
     setError('');
@@ -73,25 +171,28 @@ export const VerificationStepModal: React.FC<VerificationStepModalProps> = ({
 
     try {
       if (step === 1) {
-        if (!ciNum.trim() || ciNum.trim().length < 5 || !ciF || !ciB || !selfie) {
-          setError(APP_STRINGS.errors.missingVerificationStep1);
+        const stepError = buildStep1Error(ciNum, idFrontUri, idBackUri, selfieUri);
+        if (stepError) {
+          setShowMissing(true);
+          setError(stepError);
           setSaving(false);
           return;
         }
         await verificationRepository.saveStep(walkerId, {
           nationalIdNumber: ciNum.trim(),
-          idFrontUploaded: ciF,
-          idBackUploaded: ciB,
-          selfieUploaded: selfie,
+          idFrontUploaded: true,
+          idBackUploaded: true,
+          selfieUploaded: true,
         });
       } else if (step === 2) {
-        if (!antec) {
+        if (!antecUri) {
+          setShowMissing(true);
           setError(APP_STRINGS.errors.missingVerificationStep2);
           setSaving(false);
           return;
         }
         await verificationRepository.saveStep(walkerId, {
-          policeRecordUploaded: antec,
+          policeRecordUploaded: true,
         });
       } else if (step === 3) {
         const clean1 = cleanBolivianPhone(r1p);
@@ -113,13 +214,14 @@ export const VerificationStepModal: React.FC<VerificationStepModalProps> = ({
           ref2Phone: clean2,
         });
       } else if (step === 4) {
-        if (!slot) {
-          setError(APP_STRINGS.errors.missingVerificationStep4);
+        const dayId = toWalkDayId(interviewDate);
+        if (isInterviewScheduleInPast(dayId, interviewTime)) {
+          setError('Elige una fecha y hora futuras');
           setSaving(false);
           return;
         }
         await verificationRepository.saveStep(walkerId, {
-          interviewSlot: slot,
+          interviewSlot: formatInterviewSlotStored(dayId, interviewTime),
         });
       }
 
@@ -145,175 +247,237 @@ export const VerificationStepModal: React.FC<VerificationStepModalProps> = ({
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay}>
-          <TouchableWithoutFeedback>
-            <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-              style={styles.sheet}
-            >
-              <View style={styles.header}>
-                <View>
-                  <Text style={styles.eyebrow}>Paso {step} de 4</Text>
-                  <Text style={styles.title}>{getStepTitle()}</Text>
-                </View>
-                <IconButton icon="close" onPress={onClose} />
-              </View>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={styles.overlay}>
+        <Pressable style={styles.backdrop} onPress={onClose} accessibilityRole="button" />
+        <KeyboardAvoidingView behavior={keyboardAvoidingBehavior} style={styles.sheet}>
+          <View style={styles.header}>
+            <View style={styles.headerText}>
+              <Text style={styles.eyebrow}>Paso {step} de 4</Text>
+              <Text style={styles.title}>{getStepTitle()}</Text>
+            </View>
+            <IconButton icon="close" onPress={onClose} />
+          </View>
 
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-                contentContainerStyle={styles.scrollContent}
-              >
-                {step === 1 && (
-                  <View style={styles.stepContent}>
-                    <Field label="Número de carnet">
-                      <Input
-                        placeholder="Ej. 8765432 CB"
-                        value={ciNum}
-                        onChangeText={setCiNum}
-                      />
-                    </Field>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.scrollContent}
+          >
+            {step === 1 && (
+              <View style={styles.stepContent}>
+                <Field label="Número de carnet">
+                  <Input
+                    placeholder="Ej. 8765432 CB"
+                    value={ciNum}
+                    onChangeText={(val) => {
+                      setCiNum(val);
+                      if (error) setError('');
+                    }}
+                  />
+                </Field>
 
-                    <Text style={styles.subLabel}>Fotos requeridas</Text>
-                    <View style={styles.tilesRow}>
-                      <View style={styles.tileCol}>
-                        <UploadTile
-                          label="Anverso"
-                          isUploaded={ciF}
-                          onPress={() => setCiF(!ciF)}
-                        />
-                      </View>
-                      <View style={styles.tileCol}>
-                        <UploadTile
-                          label="Reverso"
-                          isUploaded={ciB}
-                          onPress={() => setCiB(!ciB)}
-                        />
-                      </View>
-                    </View>
-
-                    <View style={styles.selfieTile}>
-                      <UploadTile
-                        label="Selfie sosteniendo tu carnet"
-                        isUploaded={selfie}
-                        onPress={() => setSelfie(!selfie)}
-                        aspectRatio={16 / 7}
-                      />
-                    </View>
-
-                    <Text style={styles.note}>
-                      La selfie debe mostrarte sosteniendo tu carnet junto a tu
-                      cara.
-                    </Text>
-                  </View>
-                )}
-
-                {step === 2 && (
-                  <View style={styles.stepContent}>
-                    <Text style={styles.desc}>
-                      Sube tu certificado de antecedentes vigente. Debe tener menos
-                      de 3 meses.
-                    </Text>
+                <Text style={styles.subLabel}>Fotos requeridas (las tres)</Text>
+                <View style={styles.tilesRow}>
+                  <View style={styles.tileCol}>
                     <UploadTile
-                      label="Certificado de antecedentes (PDF o foto)"
-                      isUploaded={antec}
-                      onPress={() => setAntec(!antec)}
-                      aspectRatio={16 / 8}
+                      label="Anverso"
+                      isUploaded={Boolean(idFrontUri)}
+                      previewUri={
+                        idFrontUri && idFrontUri !== 'saved' ? idFrontUri : null
+                      }
+                      highlightMissing={showMissing}
+                      onPress={() =>
+                        void pickIdPhoto('Anverso del carnet', setIdFrontUri)
+                      }
                     />
                   </View>
-                )}
-
-                {step === 3 && (
-                  <View style={styles.stepContent}>
-                    <Text style={styles.desc}>
-                      Dos personas que te conozcan y no sean familiares. Las
-                      llamaremos brevemente.
-                    </Text>
-
-                    <Text style={styles.refHeader}>Referencia 1</Text>
-                    <Field label="Nombre">
-                      <Input
-                        placeholder="Nombre completo"
-                        value={r1n}
-                        onChangeText={setR1n}
-                      />
-                    </Field>
-                    <Field label="Teléfono">
-                      <PhoneInput value={r1p} onChangeText={setR1p} />
-                    </Field>
-
-                    <Text style={styles.refHeader}>Referencia 2</Text>
-                    <Field label="Nombre">
-                      <Input
-                        placeholder="Nombre completo"
-                        value={r2n}
-                        onChangeText={setR2n}
-                      />
-                    </Field>
-                    <Field label="Teléfono">
-                      <PhoneInput value={r2p} onChangeText={setR2p} />
-                    </Field>
+                  <View style={styles.tileCol}>
+                    <UploadTile
+                      label="Reverso"
+                      isUploaded={Boolean(idBackUri)}
+                      previewUri={idBackUri && idBackUri !== 'saved' ? idBackUri : null}
+                      highlightMissing={showMissing}
+                      onPress={() => void pickIdPhoto('Reverso del carnet', setIdBackUri)}
+                    />
                   </View>
-                )}
+                </View>
 
-                {step === 4 && (
-                  <View style={styles.stepContent}>
-                    <Text style={styles.desc}>
-                      Una videollamada de 15 minutos para conocerte. Elige un
-                      horario.
-                    </Text>
-                    <View style={styles.slotsGrid}>
-                      {INTERVIEW_SLOTS.map((s) => {
-                        const isSelected = slot === s;
-                        return (
-                          <TouchableOpacity
-                            key={s}
-                            activeOpacity={0.7}
-                            onPress={() => setSlot(s)}
-                            style={[
-                              styles.slotButton,
-                              isSelected && styles.slotButtonSelected,
-                            ]}
-                          >
-                            <Text
-                              style={[
-                                styles.slotText,
-                                isSelected && styles.slotTextSelected,
-                              ]}
-                            >
-                              {s}
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
-                  </View>
-                )}
+                <View style={styles.selfieTile}>
+                  <UploadTile
+                    label="Selfie sosteniendo tu carnet"
+                    isUploaded={Boolean(selfieUri)}
+                    previewUri={selfieUri && selfieUri !== 'saved' ? selfieUri : null}
+                    highlightMissing={showMissing}
+                    onPress={() => void pickIdPhoto('Selfie con tu carnet', setSelfieUri)}
+                    aspectRatio={16 / 7}
+                  />
+                </View>
 
-                {Boolean(error) && (
-                  <Text style={styles.errorText}>{error}</Text>
-                )}
-              </ScrollView>
+                <Text style={styles.note}>
+                  La selfie debe mostrarte sosteniendo tu carnet junto a tu cara. Toca
+                  cada recuadro para abrir galería o cámara.
+                </Text>
+              </View>
+            )}
 
-              <View style={styles.footer}>
-                <Button
-                  title="Guardar"
-                  onPress={handleSave}
-                  loading={saving}
-                  size="lg"
+            {step === 2 && (
+              <View style={styles.stepContent}>
+                <Text style={styles.desc}>
+                  Sube tu certificado de antecedentes vigente. Debe tener menos de 3
+                  meses.
+                </Text>
+                <UploadTile
+                  label="Certificado de antecedentes (PDF o foto)"
+                  isUploaded={Boolean(antecUri)}
+                  previewUri={antecUri && antecUri !== 'saved' ? antecUri : null}
+                  highlightMissing={showMissing}
+                  onPress={() =>
+                    void pickIdPhoto('Certificado de antecedentes', setAntecUri)
+                  }
+                  aspectRatio={16 / 8}
                 />
               </View>
-            </KeyboardAvoidingView>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
+            )}
+
+            {step === 3 && (
+              <View style={styles.stepContent}>
+                <Text style={styles.desc}>
+                  Dos personas que te conozcan y no sean familiares. Las llamaremos
+                  brevemente.
+                </Text>
+
+                <Text style={styles.refHeader}>Referencia 1</Text>
+                <Field label="Nombre">
+                  <Input
+                    placeholder="Nombre completo"
+                    value={r1n}
+                    onChangeText={setR1n}
+                  />
+                </Field>
+                <Field label="Teléfono">
+                  <PhoneInput value={r1p} onChangeText={setR1p} />
+                </Field>
+
+                <Text style={styles.refHeader}>Referencia 2</Text>
+                <Field label="Nombre">
+                  <Input
+                    placeholder="Nombre completo"
+                    value={r2n}
+                    onChangeText={setR2n}
+                  />
+                </Field>
+                <Field label="Teléfono">
+                  <PhoneInput value={r2p} onChangeText={setR2p} />
+                </Field>
+              </View>
+            )}
+
+            {step === 4 && (
+              <View style={styles.stepContent}>
+                <Text style={styles.desc}>
+                  Una videollamada de 15 minutos para conocerte. Elige día y hora en el
+                  calendario.
+                </Text>
+                <Text style={styles.scheduleHint}>
+                  Horario de entrevistas: 09:00 a 18:00 · hasta{' '}
+                  {INTERVIEW_SCHEDULE_MAX_DAYS_AHEAD} días adelante
+                </Text>
+
+                <View style={styles.scheduleCard}>
+                  <View style={styles.scheduleBlock}>
+                    <Text style={styles.scheduleLabel}>Fecha</Text>
+                    {Platform.OS === 'ios' ? (
+                      <DateTimePicker
+                        value={datePickerValue}
+                        mode="date"
+                        display="spinner"
+                        minimumDate={scheduleMinDate}
+                        maximumDate={scheduleMaxDate}
+                        onChange={handleInterviewDateChange}
+                        themeVariant="light"
+                        style={styles.iosPicker}
+                      />
+                    ) : (
+                      <>
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          style={styles.androidPickerButton}
+                          onPress={() => setShowAndroidDatePicker(true)}
+                        >
+                          <Text style={styles.androidPickerMain}>
+                            {interviewCalendarLabel}
+                          </Text>
+                          <Text style={styles.androidPickerHint}>Seleccionar fecha</Text>
+                        </TouchableOpacity>
+                        {showAndroidDatePicker ? (
+                          <DateTimePicker
+                            value={datePickerValue}
+                            mode="date"
+                            minimumDate={scheduleMinDate}
+                            maximumDate={scheduleMaxDate}
+                            onChange={handleInterviewDateChange}
+                          />
+                        ) : null}
+                      </>
+                    )}
+                  </View>
+
+                  <View style={styles.scheduleDivider} />
+
+                  <View style={styles.scheduleBlock}>
+                    <Text style={styles.scheduleLabel}>Hora</Text>
+                    {Platform.OS === 'ios' ? (
+                      <DateTimePicker
+                        value={interviewTime}
+                        mode="time"
+                        display="spinner"
+                        is24Hour
+                        minuteInterval={15}
+                        onChange={handleInterviewTimeChange}
+                        themeVariant="light"
+                        style={styles.iosPicker}
+                      />
+                    ) : (
+                      <>
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          style={styles.androidPickerButton}
+                          onPress={() => setShowAndroidTimePicker(true)}
+                        >
+                          <Text style={styles.androidPickerMain}>
+                            {formatTimeHHmm(interviewTime)}
+                          </Text>
+                          <Text style={styles.androidPickerHint}>Seleccionar hora</Text>
+                        </TouchableOpacity>
+                        {showAndroidTimePicker ? (
+                          <DateTimePicker
+                            value={interviewTime}
+                            mode="time"
+                            is24Hour
+                            minuteInterval={15}
+                            onChange={handleInterviewTimeChange}
+                          />
+                        ) : null}
+                      </>
+                    )}
+                  </View>
+                </View>
+
+                <Text style={styles.scheduleConfirm}>
+                  Programado: {formatInterviewSlotLabel(interviewDayId, interviewTime)}
+                </Text>
+              </View>
+            )}
+
+            {Boolean(error) && <Text style={styles.errorText}>{error}</Text>}
+          </ScrollView>
+
+          <SafeAreaView edges={['bottom', 'left', 'right']} style={styles.footer}>
+            <Button title="Guardar" onPress={handleSave} loading={saving} size="lg" />
+          </SafeAreaView>
+        </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 };
@@ -321,8 +485,11 @@ export const VerificationStepModal: React.FC<VerificationStepModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(42, 36, 32, 0.45)',
     justifyContent: 'flex-end',
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(42, 36, 32, 0.45)',
   },
   sheet: {
     backgroundColor: '#FFFCF7',
@@ -331,7 +498,7 @@ const styles = StyleSheet.create({
     maxHeight: '92%',
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    paddingBottom: 0,
   },
   header: {
     flexDirection: 'row',
@@ -340,6 +507,11 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#E6DCCD',
+    gap: 12,
+  },
+  headerText: {
+    flex: 1,
+    minWidth: 0,
   },
   eyebrow: {
     fontFamily: 'Figtree_600SemiBold',
@@ -384,6 +556,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#8A7D70',
     marginTop: 4,
+    lineHeight: 18,
   },
   refHeader: {
     fontFamily: 'Figtree_600SemiBold',
@@ -391,38 +564,73 @@ const styles = StyleSheet.create({
     color: '#2A2420',
     marginTop: 8,
   },
-  slotsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginTop: 8,
+  scheduleHint: {
+    fontFamily: 'Figtree_400Regular',
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#8A7D70',
+    marginBottom: 4,
   },
-  slotButton: {
-    width: '48%',
+  scheduleCard: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderColor: '#E6DCCD',
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 8 : 14,
+    overflow: 'hidden',
+  },
+  scheduleBlock: {
+    paddingVertical: 4,
+  },
+  scheduleDivider: {
+    height: 1,
+    backgroundColor: '#E6DCCD',
+    marginVertical: 8,
+  },
+  scheduleLabel: {
+    fontFamily: 'Figtree_600SemiBold',
+    fontSize: 13,
+    color: '#6B6058',
+    marginBottom: 4,
+  },
+  scheduleConfirm: {
+    fontFamily: 'Figtree_500Medium',
+    fontSize: 13,
+    color: '#2F6E48',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  iosPicker: {
+    width: '100%',
+    height: 150,
+  },
+  androidPickerButton: {
+    backgroundColor: '#F7F2EA',
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
+    marginTop: 4,
   },
-  slotButtonSelected: {
-    backgroundColor: '#3E8E5E',
-    borderColor: '#3E8E5E',
-  },
-  slotText: {
-    fontFamily: 'Figtree_600SemiBold',
-    fontSize: 14,
+  androidPickerMain: {
+    fontFamily: 'BricolageGrotesque_700Bold',
+    fontSize: 20,
     color: '#2A2420',
+    textAlign: 'center',
   },
-  slotTextSelected: {
-    color: '#FFFFFF',
+  androidPickerHint: {
+    fontFamily: 'Figtree_400Regular',
+    fontSize: 13,
+    color: '#6B6058',
+    marginTop: 4,
   },
   errorText: {
     fontFamily: 'Figtree_400Regular',
     fontSize: 13,
     color: '#B4472B',
     marginTop: 10,
+    lineHeight: 18,
   },
   footer: {
     paddingTop: 12,
@@ -430,4 +638,3 @@ const styles = StyleSheet.create({
     borderTopColor: '#E6DCCD',
   },
 });
-

@@ -22,6 +22,9 @@ export interface IRequestsRepository {
   getRequestById(requestId: string): Promise<WalkRequest | null>;
   createRequest(input: CreateWalkRequestInput): Promise<WalkRequest>;
   updateRequestStatus(requestId: string, status: WalkRequestStatus): Promise<WalkRequest>;
-  rateCompletedWalk(requestId: string, rating: number, comment?: string): Promise<WalkRequest>;
+  rateCompletedWalk(
+    requestId: string,
+    rating: number,
+    comment?: string
+  ): Promise<WalkRequest>;
 }
-

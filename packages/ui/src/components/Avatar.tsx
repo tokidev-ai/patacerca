@@ -20,8 +20,7 @@ export const Avatar: React.FC<AvatarProps> = ({
 }) => {
   const initials = getInitials(name);
 
-  const matched =
-    avatarColors.find((c) => c.name === colorName) || avatarColors[0]!;
+  const matched = avatarColors.find((c) => c.name === colorName) || avatarColors[0]!;
 
   const fontSize = Math.round(size * 0.38);
 
@@ -29,10 +28,7 @@ export const Avatar: React.FC<AvatarProps> = ({
     return (
       <Image
         source={imageSource}
-        style={[
-          styles.container,
-          { width: size, height: size, borderRadius: size / 2 },
-        ]}
+        style={[styles.container, { width: size, height: size, borderRadius: size / 2 }]}
       />
     );
   }
@@ -41,10 +37,7 @@ export const Avatar: React.FC<AvatarProps> = ({
     return (
       <Image
         source={{ uri: imageUri }}
-        style={[
-          styles.container,
-          { width: size, height: size, borderRadius: size / 2 },
-        ]}
+        style={[styles.container, { width: size, height: size, borderRadius: size / 2 }]}
       />
     );
   }
@@ -88,4 +81,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-

@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ViewStyle,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
 
 export interface SegmentOption<T extends string> {
   value: T;
@@ -87,4 +81,3 @@ const styles = StyleSheet.create({
     color: '#6B6058',
   },
 });
-

@@ -32,3 +32,15 @@ export function isValidBolivianPhone(phone: string): boolean {
   return /^[67]\d{7}$/.test(phone);
 }
 
+/** Visualización en input: 7 12 34 567 (8 dígitos, sin +591). */
+export function formatBolivianPhoneForDisplay(raw: string): string {
+  const digits = cleanBolivianPhone(raw).slice(0, 8);
+  if (!digits) return '';
+  const chunks = [
+    digits.slice(0, 1),
+    digits.slice(1, 3),
+    digits.slice(3, 5),
+    digits.slice(5, 8),
+  ].filter((part) => part.length > 0);
+  return chunks.join(' ');
+}

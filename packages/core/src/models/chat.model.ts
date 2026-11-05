@@ -15,4 +15,3 @@ export interface ChatThread {
   lastMessage?: ChatMessage;
   updatedAt: number;
 }
-

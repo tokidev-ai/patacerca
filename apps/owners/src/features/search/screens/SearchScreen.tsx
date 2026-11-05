@@ -16,6 +16,7 @@ import {
   VerifiedBadge,
   Chip,
   EmptyState,
+  SearchableOptionList,
 } from '@patacerca/ui';
 import { Walker, COCHABAMBA_ZONES } from '@patacerca/core';
 import { useData } from '../../../providers/DataProvider';
@@ -26,9 +27,7 @@ export const SearchScreen: React.FC = () => {
   const { walkersRepository } = useData();
   const { owner } = useSessionStore();
 
-  const [selectedZone, setSelectedZone] = useState<string>(
-    owner?.zone || 'Queru Queru'
-  );
+  const [selectedZone, setSelectedZone] = useState<string>(owner?.zone || 'Queru Queru');
   const [searchQuery, setSearchQuery] = useState('');
   const [onlyAvailableToday, setOnlyAvailableToday] = useState(false);
   const [acceptsLargeDogs, setAcceptsLargeDogs] = useState(false);
@@ -65,11 +64,7 @@ export const SearchScreen: React.FC = () => {
   };
 
   const hasActiveFilters =
-    searchQuery ||
-    onlyAvailableToday ||
-    acceptsLargeDogs ||
-    travelCare ||
-    maxPrice20;
+    searchQuery || onlyAvailableToday || acceptsLargeDogs || travelCare || maxPrice20;
 
   const { inZoneCount, nearbyCount } = useMemo(() => {
     let inZone = 0;
@@ -85,8 +80,7 @@ export const SearchScreen: React.FC = () => {
   }, [walkers, selectedZone]);
 
   const renderWalkerCard = ({ item }: { item: Walker }) => {
-    const isExactZone =
-      item.zone.toLowerCase() === selectedZone.toLowerCase();
+    const isExactZone = item.zone.toLowerCase() === selectedZone.toLowerCase();
     const subtitle = isExactZone
       ? `${item.zone} · ${item.distanceText}`
       : `${item.zone} · zona cercana`;
@@ -97,11 +91,7 @@ export const SearchScreen: React.FC = () => {
         onPress={() => router.push(`/walker/${item.id}`)}
         style={styles.card}
       >
-        <Avatar
-          name={item.name}
-          colorName={item.colorName}
-          size={56}
-        />
+        <Avatar name={item.name} colorName={item.colorName} size={56} />
         <View style={styles.cardInfo}>
           <View style={styles.nameRow}>
             <Text style={styles.walkerName}>{item.name}</Text>
@@ -132,22 +122,15 @@ export const SearchScreen: React.FC = () => {
         <Text style={styles.greeting}>Hola, {owner?.name || 'Amigo'}</Text>
         <Text style={styles.title}>Paseadores cerca de ti</Text>
 
-        <View style={styles.searchRow}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.zonesScroll}
-          >
-            {COCHABAMBA_ZONES.map((z) => (
-              <Chip
-                key={z}
-                label={z}
-                selected={selectedZone === z}
-                onPress={() => setSelectedZone(z)}
-                size="sm"
-              />
-            ))}
-          </ScrollView>
+        <View style={styles.zonePickerSection}>
+          <Text style={styles.zonePickerLabel}>Zona</Text>
+          <SearchableOptionList
+            options={COCHABAMBA_ZONES}
+            value={selectedZone}
+            onChange={setSelectedZone}
+            searchPlaceholder="Buscar barrio para filtrar…"
+            maxListHeight={160}
+          />
         </View>
 
         <View style={styles.inputWrapper}>
@@ -243,11 +226,14 @@ const styles = StyleSheet.create({
     letterSpacing: -0.84,
     marginBottom: 12,
   },
-  searchRow: {
+  zonePickerSection: {
     marginBottom: 10,
   },
-  zonesScroll: {
-    gap: 6,
+  zonePickerLabel: {
+    fontFamily: 'Figtree_600SemiBold',
+    fontSize: 13,
+    color: '#6B6058',
+    marginBottom: 6,
   },
   inputWrapper: {
     marginBottom: 10,
@@ -340,4 +326,3 @@ const styles = StyleSheet.create({
     color: '#2A2420',
   },
 });
-

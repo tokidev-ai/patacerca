@@ -51,4 +51,3 @@ export const INITIAL_REQUESTS: WalkRequest[] = [
     createdAt: Date.now() - 86400000,
   },
 ];
-

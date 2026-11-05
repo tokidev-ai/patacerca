@@ -1,21 +1,14 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Button, Input, Chip, Field } from '@patacerca/ui';
 import {
-  COCHABAMBA_ZONES,
-  DEFAULT_ZONE,
-  Walker,
-  APP_STRINGS,
-} from '@patacerca/core';
+  Button,
+  Input,
+  Field,
+  FormScreenLayout,
+  SearchableOptionList,
+} from '@patacerca/ui';
+import { COCHABAMBA_ZONES, DEFAULT_ZONE, Walker, APP_STRINGS } from '@patacerca/core';
 import { useWalkerData } from '../../../providers/DataProvider';
 import { useWalkerSessionStore } from '../../../store/session.store';
 
@@ -64,9 +57,10 @@ export const OnboardingScreen: React.FC = () => {
 
     try {
       await profileRepository.saveWalkerProfile(newWalker);
-      await walkersRepository.updateWalkerProfile(newWalker.id, newWalker).catch(() => {});
+      await walkersRepository
+        .updateWalkerProfile(newWalker.id, newWalker)
+        .catch(() => {});
       setSession(userPhone, newWalker);
-      // Automatically opens the Verification screen as designed!
       router.replace('/verification');
     } finally {
       setLoading(false);
@@ -74,88 +68,54 @@ export const OnboardingScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.container}
-      >
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles.scrollContent}
-        >
-          <Text style={styles.eyebrow}>Crea tu cuenta</Text>
-          <Text style={styles.title}>Empecemos por lo básico</Text>
+    <FormScreenLayout
+      footer={
+        <Button title="Continuar" onPress={handleSubmit} loading={loading} size="lg" />
+      }
+    >
+      <Text style={styles.eyebrow}>Crea tu cuenta</Text>
+      <Text style={styles.title}>Empecemos por lo básico</Text>
 
-          <Field label="Nombre completo" error={error}>
-            <Input
-              placeholder="Como aparece en tu carnet"
-              value={name}
-              onChangeText={(val) => {
-                setName(val);
-                if (error) setError('');
-              }}
-            />
-          </Field>
+      <Field label="Nombre completo" error={error}>
+        <Input
+          placeholder="Como aparece en tu carnet"
+          value={name}
+          onChangeText={(val) => {
+            setName(val);
+            if (error) setError('');
+          }}
+        />
+      </Field>
 
-          <View style={styles.fieldSection}>
-            <Text style={styles.fieldLabel}>Zona donde vives</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.horizontalChips}
-            >
-              {COCHABAMBA_ZONES.map((z) => (
-                <Chip
-                  key={z}
-                  label={z}
-                  selected={zone === z}
-                  onPress={() => setZone(z)}
-                />
-              ))}
-            </ScrollView>
-          </View>
+      <View style={styles.fieldSection}>
+        <Text style={styles.fieldLabel}>Zona donde vives</Text>
+        <Text style={styles.fieldHint}>Elige tu barrio en la lista</Text>
+        <SearchableOptionList
+          options={COCHABAMBA_ZONES}
+          value={zone}
+          onChange={setZone}
+          searchPlaceholder="Buscar barrio…"
+          maxListHeight={200}
+        />
+      </View>
 
-          {/* Sand Info Note */}
-          <View style={styles.sandNote}>
-            <Text style={styles.sandNoteText}>
-              <Text style={styles.sandNoteBold}>Siguiente paso:</Text> verificar tu
-              identidad. Los dueños solo ven paseadores verificados.
-            </Text>
-          </View>
-        </ScrollView>
-
-        <View style={styles.bottomBar}>
-          <Button
-            title="Continuar"
-            onPress={handleSubmit}
-            loading={loading}
-            size="lg"
-          />
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      <View style={styles.sandNote}>
+        <Text style={styles.sandNoteText}>
+          <Text style={styles.sandNoteBold}>Siguiente paso:</Text> verificar tu identidad.
+          Los dueños solo ven paseadores verificados.
+        </Text>
+      </View>
+    </FormScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F7F2EA',
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 24,
-  },
-  scrollContent: {
-    paddingTop: 24,
-    paddingBottom: 24,
-  },
   eyebrow: {
     fontSize: 13,
     fontFamily: 'Figtree_600SemiBold',
     color: '#3E8E5E',
     marginBottom: 4,
+    marginTop: 24,
   },
   title: {
     fontFamily: 'BricolageGrotesque_700Bold',
@@ -172,11 +132,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Figtree_600SemiBold',
     fontSize: 15,
     color: '#2A2420',
-    marginBottom: 8,
+    marginBottom: 4,
   },
-  horizontalChips: {
-    gap: 8,
-    paddingVertical: 2,
+  fieldHint: {
+    fontFamily: 'Figtree_400Regular',
+    fontSize: 13,
+    color: '#6B6058',
+    marginBottom: 10,
+    lineHeight: 18,
   },
   sandNote: {
     backgroundColor: '#EFE6D8',
@@ -195,8 +158,4 @@ const styles = StyleSheet.create({
     fontFamily: 'Figtree_600SemiBold',
     color: '#2A2420',
   },
-  bottomBar: {
-    paddingVertical: 20,
-  },
 });
-

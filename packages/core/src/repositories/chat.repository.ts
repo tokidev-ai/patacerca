@@ -13,4 +13,3 @@ export interface IChatRepository {
     walkerName?: string
   ): Promise<ChatMessage>;
 }
-

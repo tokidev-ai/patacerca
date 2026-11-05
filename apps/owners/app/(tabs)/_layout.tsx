@@ -52,15 +52,11 @@ export default function TabsLayout() {
                 badgeCount={acceptedCount}
                 onPress={() => goToTab(1, 'walks')}
               />
-              <TabBarItem
-                label="Mensajes"
-                focused={state.index === 2}
-                onPress={() => goToTab(2, 'messages')}
-              />
+              {/* Mensajes: pantalla aún no en uso — se habilitará en una fase posterior */}
               <TabBarItem
                 label="Perfil"
-                focused={state.index === 3}
-                onPress={() => goToTab(3, 'profile')}
+                focused={state.index === 2}
+                onPress={() => goToTab(2, 'profile')}
               />
             </View>
           </View>
@@ -69,8 +65,9 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="search" />
       <Tabs.Screen name="walks" />
-      <Tabs.Screen name="messages" />
       <Tabs.Screen name="profile" />
+      {/* Mensajes oculto del tab bar; ruta sigue para chat desde paseos/perfil */}
+      <Tabs.Screen name="messages" options={{ href: null }} />
     </Tabs>
   );
 }
@@ -87,4 +84,3 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFCF7',
   },
 });
-

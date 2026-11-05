@@ -41,4 +41,3 @@ export const useWalkerSessionStore = create<WalkerSessionState>((set) => ({
       isAuthenticated: false,
     }),
 }));
-

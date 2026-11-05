@@ -5,8 +5,9 @@ import {
   StyleSheet,
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { keyboardAvoidingBehavior } from '../keyboard';
 
 export interface BottomSheetProps {
   visible: boolean;
@@ -20,21 +21,18 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   children,
 }) => {
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={keyboardAvoidingBehavior}
         style={styles.keyboardContainer}
       >
         <View style={styles.overlay}>
           <TouchableWithoutFeedback onPress={onClose}>
             <View style={styles.backdrop} />
           </TouchableWithoutFeedback>
-          <View style={styles.sheetContent}>{children}</View>
+          <SafeAreaView edges={['bottom', 'left', 'right']} style={styles.sheetContent}>
+            {children}
+          </SafeAreaView>
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -58,9 +56,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingTop: 16,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 24,
+    paddingBottom: 16,
     paddingHorizontal: 20,
     maxHeight: '92%',
   },
 });
-

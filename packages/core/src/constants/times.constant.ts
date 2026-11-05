@@ -1,11 +1,4 @@
-export const WALK_HOURS = [
-  '07:00',
-  '09:00',
-  '12:00',
-  '16:00',
-  '18:00',
-  '19:30',
-] as const;
+export const WALK_HOURS = ['07:00', '09:00', '12:00', '16:00', '18:00', '19:30'] as const;
 
 export const INTERVIEW_SLOTS = [
   'Lun 10:00',
@@ -16,20 +9,6 @@ export const INTERVIEW_SLOTS = [
   'Vie 15:00',
 ] as const;
 
-export const WALKER_TIME_SLOTS = [
-  'Mañana',
-  'Mediodía',
-  'Tarde',
-  'Noche',
-] as const;
+export const WALKER_TIME_SLOTS = ['Mañana', 'Mediodía', 'Tarde', 'Noche'] as const;
 
-export const WEEK_DAYS = [
-  'Lun',
-  'Mar',
-  'Mié',
-  'Jue',
-  'Vie',
-  'Sáb',
-  'Dom',
-] as const;
-
+export const WEEK_DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'] as const;

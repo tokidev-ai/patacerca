@@ -5,12 +5,18 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Avatar, Segmented, Button, EmptyState } from '@patacerca/ui';
-import { WalkRequest, getCompletedStepsCount, APP_STRINGS } from '@patacerca/core';
+import {
+  WalkRequest,
+  getCompletedStepsCount,
+  APP_STRINGS,
+  buildWhatsAppUrl,
+} from '@patacerca/core';
 import { useWalkerData } from '../../../providers/DataProvider';
 import { useWalkerSessionStore } from '../../../store/session.store';
 import { useToastStore } from '../../../store/toast.store';
@@ -81,18 +87,15 @@ export const RequestsScreen: React.FC = () => {
     (r) => r.status === 'accepted' || r.status === 'completed'
   );
   const historyRequests = requests.filter(
-    (r) =>
-      r.status === 'rejected' ||
-      r.status === 'cancelled' ||
-      r.status === 'confirmed'
+    (r) => r.status === 'rejected' || r.status === 'cancelled' || r.status === 'confirmed'
   );
 
   const displayedRequests =
     segment === 'new'
       ? newRequests
       : segment === 'accepted'
-      ? acceptedRequests
-      : historyRequests;
+        ? acceptedRequests
+        : historyRequests;
 
   const handleAcceptPress = (req: WalkRequest) => {
     if (status !== 'approved') {
@@ -129,15 +132,13 @@ export const RequestsScreen: React.FC = () => {
               {item.dogSize === 'small'
                 ? 'Pequeño'
                 : item.dogSize === 'large'
-                ? 'Grande'
-                : 'Mediano'}
+                  ? 'Grande'
+                  : 'Mediano'}
             </Text>
           </View>
         </View>
 
-        {Boolean(item.note) && (
-          <Text style={styles.noteText}>“{item.note}”</Text>
-        )}
+        {Boolean(item.note) && <Text style={styles.noteText}>“{item.note}”</Text>}
 
         {/* Actions for New Requests */}
         {segment === 'new' && (
@@ -163,10 +164,13 @@ export const RequestsScreen: React.FC = () => {
         {segment === 'accepted' && (
           <View style={styles.acceptedActionsCol}>
             <Button
-              title={`Escribir a ${item.ownerName}`}
+              title={`WhatsApp · ${item.ownerName}`}
               variant="primary"
               size="sm"
-              onPress={() => router.push(`/chat/${item.id}`)}
+              onPress={() => {
+                const message = `Hola ${item.ownerName}, te escribo por el paseo de ${item.dogName} (${item.dayText} ${item.timeText}) en Patacerca.`;
+                Linking.openURL(buildWhatsAppUrl(item.ownerPhone, message));
+              }}
             />
             {item.status === 'accepted' && (
               <Button
@@ -192,8 +196,8 @@ export const RequestsScreen: React.FC = () => {
               {item.status === 'rejected'
                 ? 'Rechazada por ti'
                 : item.status === 'cancelled'
-                ? 'Cancelada por el dueño'
-                : 'Paseo completado y calificado ★★★★★'}
+                  ? 'Cancelada por el dueño'
+                  : 'Paseo completado y calificado ★★★★★'}
             </Text>
           </View>
         )}
@@ -238,20 +242,15 @@ export const RequestsScreen: React.FC = () => {
 
         {status === 'in_review' && (
           <View style={styles.reviewBanner}>
-            <Text style={styles.reviewTitle}>
-              Tu verificación está en revisión
-            </Text>
+            <Text style={styles.reviewTitle}>Tu verificación está en revisión</Text>
             <Text style={styles.reviewSubtitle}>
-              Te avisaremos por WhatsApp en 48 horas. Mientras, ya puedes ver
-              solicitudes.
+              Te avisaremos por WhatsApp en 48 horas. Mientras, ya puedes ver solicitudes.
             </Text>
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => simulateApprovalMutation.mutate()}
             >
-              <Text style={styles.simulateLink}>
-                Simular aprobación (prototipo)
-              </Text>
+              <Text style={styles.simulateLink}>Simular aprobación (prototipo)</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -285,8 +284,8 @@ export const RequestsScreen: React.FC = () => {
               segment === 'new'
                 ? 'No tienes solicitudes nuevas'
                 : segment === 'accepted'
-                ? 'Aún no aceptaste paseos'
-                : 'Sin historial todavía'
+                  ? 'Aún no aceptaste paseos'
+                  : 'Sin historial todavía'
             }
             subtitle={
               segment === 'new'
@@ -481,4 +480,3 @@ const styles = StyleSheet.create({
     color: '#8A7D70',
   },
 });
-

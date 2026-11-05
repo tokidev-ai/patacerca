@@ -3,4 +3,3 @@ import { WalkerMessagesScreen } from '../../src/features/chat/screens/WalkerMess
 export default function MessagesRoute() {
   return <WalkerMessagesScreen />;
 }
-

@@ -17,6 +17,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: '#F7F2EA',
     },
     package: 'com.patacerca.owners',
+    softwareKeyboardLayoutMode: 'resize',
   },
   androidStatusBar: {
     barStyle: 'dark-content',
@@ -33,6 +34,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-splash-screen',
       {
         backgroundColor: '#F7F2EA',
+      },
+    ],
+    [
+      'expo-image-picker',
+      {
+        photosPermission:
+          'Patacerca usa tus fotos para la imagen de tu mascota en el perfil.',
+        cameraPermission: 'Patacerca usa la cámara para tomar la foto de tu mascota.',
       },
     ],
   ],

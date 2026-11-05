@@ -1,11 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import {
-  Text,
-  StyleSheet,
-  Animated,
-  SafeAreaView,
-  Platform,
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Text, StyleSheet, Animated, SafeAreaView, Platform } from 'react-native';
 
 export interface ToastProps {
   visible: boolean;
@@ -20,8 +14,8 @@ export const Toast: React.FC<ToastProps> = ({
   onDismiss,
   duration = 2600,
 }) => {
-  const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(-20)).current;
+  const [opacity] = useState(() => new Animated.Value(0));
+  const [translateY] = useState(() => new Animated.Value(-20));
 
   useEffect(() => {
     if (visible) {
@@ -109,4 +103,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-

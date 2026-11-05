@@ -77,4 +77,3 @@ export class MockWalkersRepository implements IWalkersRepository {
     return updated;
   }
 }
-

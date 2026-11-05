@@ -25,20 +25,20 @@ export const step2Schema = z.object({
 });
 
 export const step3Schema = z.object({
-  ref1Name: z.string().trim().min(2, { message: APP_STRINGS.errors.missingVerificationStep3 }),
-  ref1Phone: z
+  ref1Name: z
     .string()
-    .transform(cleanBolivianPhone)
-    .refine(isValidBolivianPhone, {
-      message: APP_STRINGS.errors.missingVerificationStep3,
-    }),
-  ref2Name: z.string().trim().min(2, { message: APP_STRINGS.errors.missingVerificationStep3 }),
-  ref2Phone: z
+    .trim()
+    .min(2, { message: APP_STRINGS.errors.missingVerificationStep3 }),
+  ref1Phone: z.string().transform(cleanBolivianPhone).refine(isValidBolivianPhone, {
+    message: APP_STRINGS.errors.missingVerificationStep3,
+  }),
+  ref2Name: z
     .string()
-    .transform(cleanBolivianPhone)
-    .refine(isValidBolivianPhone, {
-      message: APP_STRINGS.errors.missingVerificationStep3,
-    }),
+    .trim()
+    .min(2, { message: APP_STRINGS.errors.missingVerificationStep3 }),
+  ref2Phone: z.string().transform(cleanBolivianPhone).refine(isValidBolivianPhone, {
+    message: APP_STRINGS.errors.missingVerificationStep3,
+  }),
 });
 
 export const step4Schema = z.object({
@@ -46,4 +46,3 @@ export const step4Schema = z.object({
     .string()
     .min(1, { message: APP_STRINGS.errors.missingVerificationStep4 }),
 });
-

@@ -3,4 +3,3 @@ import { WalkerProfileScreen } from '../../src/features/profile/screens/WalkerPr
 export default function ProfileRoute() {
   return <WalkerProfileScreen />;
 }
-

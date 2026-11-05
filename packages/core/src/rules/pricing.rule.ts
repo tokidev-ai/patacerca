@@ -5,4 +5,3 @@
 export function calculatePrice60(price30: number): number {
   return Math.min(50, Math.round(price30 * 1.6));
 }
-

@@ -30,4 +30,3 @@ export interface Walker {
   days: string[];
   timeSlots: string[];
 }
-

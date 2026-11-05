@@ -9,4 +9,3 @@ export const walkRequestSchema = z.object({
 });
 
 export type WalkRequestFormData = z.infer<typeof walkRequestSchema>;
-

@@ -92,4 +92,3 @@ export class MockRequestsRepository implements IRequestsRepository {
     return updated;
   }
 }
-

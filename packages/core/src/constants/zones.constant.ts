@@ -17,4 +17,3 @@ export const COCHABAMBA_ZONES = [
 export type CochabambaZone = (typeof COCHABAMBA_ZONES)[number];
 
 export const DEFAULT_ZONE: CochabambaZone = 'Queru Queru';
-

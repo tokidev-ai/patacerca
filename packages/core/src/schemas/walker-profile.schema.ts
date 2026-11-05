@@ -10,4 +10,3 @@ export const walkerProfileSchema = z.object({
 });
 
 export type WalkerProfileFormData = z.infer<typeof walkerProfileSchema>;
-

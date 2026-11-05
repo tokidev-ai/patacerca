@@ -3,4 +3,3 @@ import { WalkerDetailScreen } from '../../src/features/walker-detail/screens/Wal
 export default function WalkerDetailRoute() {
   return <WalkerDetailScreen />;
 }
-

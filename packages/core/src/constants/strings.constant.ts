@@ -14,7 +14,8 @@ export const APP_STRINGS = {
   },
   toasts: {
     welcomeBack: (name: string) => `Bienvenido de nuevo, ${name}`,
-    requestSent: (name: string) => `Solicitud enviada a ${name}. Te avisaremos cuando responda.`,
+    requestSent: (name: string) =>
+      `Solicitud enviada a ${name}. Te avisaremos cuando responda.`,
     verificationSent: 'Verificación enviada. Te avisaremos por WhatsApp.',
     verificationApproved: '¡Verificación aprobada! Ya puedes aceptar paseos.',
     walkAccepted: (name: string) => `Paseo aceptado. Escríbele a ${name} para coordinar.`,
@@ -29,4 +30,3 @@ export const APP_STRINGS = {
       `¡Hola ${ownerName}! Soy ${walkerName}. Con gusto paseo a ${dogName}. ¿Qué horario te sirve?`,
   },
 } as const;
-

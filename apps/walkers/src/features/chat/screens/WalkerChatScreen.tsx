@@ -12,7 +12,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Avatar, IconButton, ChatBubble, ChatInput } from '@patacerca/ui';
+import {
+  Avatar,
+  IconButton,
+  ChatBubble,
+  ChatInput,
+  keyboardAvoidingBehavior,
+} from '@patacerca/ui';
 import { ChatMessage, APP_STRINGS } from '@patacerca/core';
 import { useWalkerData } from '../../../providers/DataProvider';
 import { useWalkerSessionStore } from '../../../store/session.store';
@@ -91,7 +97,7 @@ export const WalkerChatScreen: React.FC = () => {
   return (
     <SafeAreaView edges={['top', 'left', 'right', 'bottom']} style={styles.safeArea}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={keyboardAvoidingBehavior}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
         style={styles.container}
       >
@@ -209,4 +215,3 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
 });
-

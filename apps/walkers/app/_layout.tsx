@@ -72,10 +72,7 @@ export default function RootLayout() {
                 name="chat/[threadId]"
                 options={{ animation: 'slide_from_right' }}
               />
-              <Stack.Screen
-                name="__dev/ui"
-                options={{ presentation: 'modal' }}
-              />
+              <Stack.Screen name="__dev/ui" options={{ presentation: 'modal' }} />
             </Stack>
           </ToastProvider>
         </QueryProvider>
@@ -83,4 +80,3 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
-

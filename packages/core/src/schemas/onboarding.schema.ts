@@ -21,4 +21,3 @@ export const walkerOnboardingSchema = z.object({
 });
 
 export type WalkerOnboardingFormData = z.infer<typeof walkerOnboardingSchema>;
-

@@ -26,4 +26,3 @@ export const useSessionStore = create<SessionState>((set) => ({
       isAuthenticated: false,
     }),
 }));
-

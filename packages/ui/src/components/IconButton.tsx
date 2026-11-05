@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  TouchableOpacity,
-  Text,
-  TouchableOpacityProps,
-  StyleSheet,
-} from 'react-native';
+import { TouchableOpacity, Text, TouchableOpacityProps, StyleSheet } from 'react-native';
 
 export interface IconButtonProps extends TouchableOpacityProps {
   icon: 'back' | 'close' | 'plus' | 'minus';
@@ -52,10 +47,10 @@ export const IconButton: React.FC<IconButtonProps> = ({
         icon === 'back'
           ? 'Volver'
           : icon === 'close'
-          ? 'Cerrar'
-          : icon === 'plus'
-          ? 'Aumentar'
-          : 'Disminuir'
+            ? 'Cerrar'
+            : icon === 'plus'
+              ? 'Aumentar'
+              : 'Disminuir'
       }
       style={[
         styles.base,
@@ -94,4 +89,3 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 });
-

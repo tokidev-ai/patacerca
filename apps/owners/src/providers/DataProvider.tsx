@@ -24,9 +24,7 @@ interface DataContextValue {
 
 const DataContext = createContext<DataContextValue | null>(null);
 
-export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const value = useMemo<DataContextValue>(
     () => ({
       authRepository: new MockAuthRepository(),
@@ -48,4 +46,3 @@ export function useData(): DataContextValue {
   }
   return ctx;
 }
-

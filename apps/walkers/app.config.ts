@@ -17,6 +17,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: '#2A2420',
     },
     package: 'com.patacerca.walkers',
+    softwareKeyboardLayoutMode: 'resize',
   },
   androidStatusBar: {
     barStyle: 'dark-content',
@@ -33,6 +34,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-splash-screen',
       {
         backgroundColor: '#2A2420',
+      },
+    ],
+    [
+      'expo-image-picker',
+      {
+        photosPermission:
+          'Patacerca usa tus fotos para verificar tu identidad como paseador.',
+        cameraPermission: 'Patacerca usa la cámara para fotos de carnet y verificación.',
       },
     ],
   ],

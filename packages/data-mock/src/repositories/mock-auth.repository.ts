@@ -9,13 +9,18 @@ export class MockAuthRepository implements IAuthRepository {
     return true;
   }
 
-  async verifyOtp(phone: string, code: string, role: UserRole): Promise<{ exists: boolean; user?: SessionUser }> {
+  async verifyOtp(
+    phone: string,
+    code: string,
+    role: UserRole
+  ): Promise<{ exists: boolean; user?: SessionUser }> {
     if (code !== '1234') {
       return { exists: false };
     }
 
     // Check if user already has an existing profile
-    const profileKey = role === 'owner' ? `@patacerca:owner:${phone}` : `@patacerca:walker:${phone}`;
+    const profileKey =
+      role === 'owner' ? `@patacerca:owner:${phone}` : `@patacerca:walker:${phone}`;
     const existing = await mockStorage.getItem<any | null>(profileKey, null);
 
     if (existing) {
@@ -44,4 +49,3 @@ export class MockAuthRepository implements IAuthRepository {
     await mockStorage.removeItem(SESSION_STORAGE_KEY);
   }
 }
-

@@ -3,4 +3,3 @@ import { VerificationScreen } from '../../src/features/verification/screens/Veri
 export default function VerificationRoute() {
   return <VerificationScreen />;
 }
-

@@ -26,6 +26,48 @@ export class MockProfileRepository implements IProfileRepository {
     const updated: Owner = {
       ...owner,
       pets,
+      dogName: pets[0]?.name ?? owner.dogName,
+      dogSize: pets[0]?.size ?? owner.dogSize,
+    };
+    await this.saveOwnerProfile(updated);
+    return updated;
+  }
+
+  async updatePetOnOwner(
+    phone: string,
+    petId: string,
+    updates: Partial<Pet>
+  ): Promise<Owner> {
+    const owner = await this.getOwnerProfile(phone);
+    if (!owner) throw new Error('Owner not found');
+    const pets = (owner.pets || []).map((p) =>
+      p.id === petId ? { ...p, ...updates, id: petId } : p
+    );
+    if (!pets.some((p) => p.id === petId)) {
+      throw new Error('Pet not found');
+    }
+    const updated: Owner = {
+      ...owner,
+      pets,
+      dogName: pets[0]?.name ?? owner.dogName,
+      dogSize: pets[0]?.size ?? owner.dogSize,
+    };
+    await this.saveOwnerProfile(updated);
+    return updated;
+  }
+
+  async removePetFromOwner(phone: string, petId: string): Promise<Owner> {
+    const owner = await this.getOwnerProfile(phone);
+    if (!owner) throw new Error('Owner not found');
+    const pets = (owner.pets || []).filter((p) => p.id !== petId);
+    if (pets.length === (owner.pets || []).length) {
+      throw new Error('Pet not found');
+    }
+    const updated: Owner = {
+      ...owner,
+      pets,
+      dogName: pets[0]?.name ?? owner.dogName,
+      dogSize: pets[0]?.size ?? owner.dogSize,
     };
     await this.saveOwnerProfile(updated);
     return updated;
@@ -40,4 +82,3 @@ export class MockProfileRepository implements IProfileRepository {
     return walker;
   }
 }
-

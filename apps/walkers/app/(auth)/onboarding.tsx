@@ -3,4 +3,3 @@ import { OnboardingScreen } from '../../src/features/auth/screens/OnboardingScre
 export default function OnboardingRoute() {
   return <OnboardingScreen />;
 }
-

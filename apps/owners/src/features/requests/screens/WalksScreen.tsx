@@ -5,12 +5,13 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { StatusPill, EmptyState, RatingModal } from '@patacerca/ui';
-import { WalkRequest, APP_STRINGS } from '@patacerca/core';
+import { WalkRequest, APP_STRINGS, buildWhatsAppUrl } from '@patacerca/core';
 import { useData } from '../../../providers/DataProvider';
 import { useSessionStore } from '../../../store/session.store';
 import { useToastStore } from '../../../store/toast.store';
@@ -18,7 +19,7 @@ import { useToastStore } from '../../../store/toast.store';
 export const WalksScreen: React.FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { requestsRepository } = useData();
+  const { requestsRepository, walkersRepository } = useData();
   const { owner } = useSessionStore();
   const { showToast } = useToastStore();
 
@@ -56,6 +57,13 @@ export const WalksScreen: React.FC = () => {
     },
   });
 
+  const openWalkerWhatsApp = async (item: WalkRequest) => {
+    const walker = await walkersRepository.getWalkerById(item.walkerId);
+    if (!walker?.phone) return;
+    const message = `Hola ${item.walkerName}, te escribo por el paseo de ${item.dogName} (${item.dayText} ${item.timeText}) en Patacerca.`;
+    Linking.openURL(buildWhatsAppUrl(walker.phone, message));
+  };
+
   const renderItem = ({ item }: { item: WalkRequest }) => {
     return (
       <View style={styles.card}>
@@ -70,21 +78,21 @@ export const WalksScreen: React.FC = () => {
 
         <View style={styles.priceRow}>
           <Text style={styles.dogInfo}>
-            {item.dogName} · {item.dogSize === 'small' ? 'Pequeño' : item.dogSize === 'large' ? 'Grande' : 'Mediano'}
+            {item.dogName} ·{' '}
+            {item.dogSize === 'small'
+              ? 'Pequeño'
+              : item.dogSize === 'large'
+                ? 'Grande'
+                : 'Mediano'}
           </Text>
           <Text style={styles.price}>{item.price} Bs</Text>
         </View>
 
-        {Boolean(item.note) && (
-          <Text style={styles.noteText}>“{item.note}”</Text>
-        )}
+        {Boolean(item.note) && <Text style={styles.noteText}>“{item.note}”</Text>}
 
         <View style={styles.actionsRow}>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => router.push(`/chat/${item.walkerId}`)}
-          >
-            <Text style={styles.chatAction}>Escribir al paseador</Text>
+          <TouchableOpacity activeOpacity={0.7} onPress={() => openWalkerWhatsApp(item)}>
+            <Text style={styles.chatAction}>WhatsApp</Text>
           </TouchableOpacity>
 
           {item.status === 'pending' && (
@@ -120,7 +128,10 @@ export const WalksScreen: React.FC = () => {
         data={requests}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          requests.length === 0 && !isLoading && styles.listContentEmpty,
+        ]}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           !isLoading ? (
@@ -173,6 +184,10 @@ const styles = StyleSheet.create({
     paddingTop: 6,
     paddingBottom: 24,
     gap: 12,
+  },
+  listContentEmpty: {
+    flexGrow: 1,
+    justifyContent: 'center',
   },
   card: {
     backgroundColor: '#FFFCF7',
@@ -252,4 +267,3 @@ const styles = StyleSheet.create({
     color: '#2F6E48',
   },
 });
-

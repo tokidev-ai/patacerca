@@ -68,4 +68,3 @@ export class MockVerificationRepository implements IVerificationRepository {
     return 'approved';
   }
 }
-

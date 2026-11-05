@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TextInputProps,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, TextInput, TextInputProps, StyleSheet } from 'react-native';
 
 export interface OtpInputProps extends Omit<TextInputProps, 'onChangeText'> {
   value: string;
@@ -83,4 +77,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-

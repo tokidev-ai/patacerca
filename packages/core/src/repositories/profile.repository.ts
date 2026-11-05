@@ -5,7 +5,8 @@ export interface IProfileRepository {
   getOwnerProfile(phone: string): Promise<Owner | null>;
   saveOwnerProfile(owner: Owner): Promise<Owner>;
   addPetToOwner(phone: string, pet: Pet): Promise<Owner>;
+  updatePetOnOwner(phone: string, petId: string, updates: Partial<Pet>): Promise<Owner>;
+  removePetFromOwner(phone: string, petId: string): Promise<Owner>;
   getWalkerProfile(walkerId: string): Promise<Walker | null>;
   saveWalkerProfile(walker: Walker): Promise<Walker>;
 }
-

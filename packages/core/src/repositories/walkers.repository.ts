@@ -14,4 +14,3 @@ export interface IWalkersRepository {
   getWalkerById(id: string): Promise<Walker | null>;
   updateWalkerProfile(id: string, updates: Partial<Walker>): Promise<Walker>;
 }
-

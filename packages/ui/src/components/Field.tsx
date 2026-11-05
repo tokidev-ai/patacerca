@@ -8,12 +8,7 @@ export interface FieldProps {
   children: React.ReactNode;
 }
 
-export const Field: React.FC<FieldProps> = ({
-  label,
-  error,
-  optional,
-  children,
-}) => {
+export const Field: React.FC<FieldProps> = ({ label, error, optional, children }) => {
   return (
     <View style={styles.container}>
       <View style={styles.labelRow}>
@@ -54,4 +49,3 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
 });
-

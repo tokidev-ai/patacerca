@@ -12,7 +12,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Avatar, IconButton, ChatBubble, ChatInput } from '@patacerca/ui';
+import {
+  Avatar,
+  IconButton,
+  ChatBubble,
+  ChatInput,
+  keyboardAvoidingBehavior,
+} from '@patacerca/ui';
 import { ChatMessage, APP_STRINGS } from '@patacerca/core';
 import { useData } from '../../../providers/DataProvider';
 import { useSessionStore } from '../../../store/session.store';
@@ -88,7 +94,7 @@ export const ChatScreen: React.FC = () => {
   return (
     <SafeAreaView edges={['top', 'left', 'right', 'bottom']} style={styles.safeArea}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={keyboardAvoidingBehavior}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
         style={styles.container}
       >
@@ -102,9 +108,7 @@ export const ChatScreen: React.FC = () => {
               size={40}
             />
             <View style={styles.nameBlock}>
-              <Text style={styles.headerName}>
-                {walker?.name || 'Paseador'}
-              </Text>
+              <Text style={styles.headerName}>{walker?.name || 'Paseador'}</Text>
               <Text style={styles.verifiedText}>✓ Verificado</Text>
             </View>
           </View>
@@ -119,9 +123,7 @@ export const ChatScreen: React.FC = () => {
 
         {/* Security Warning */}
         <View style={styles.warningContainer}>
-          <Text style={styles.warningText}>
-            {APP_STRINGS.chat.disclaimer}
-          </Text>
+          <Text style={styles.warningText}>{APP_STRINGS.chat.disclaimer}</Text>
         </View>
 
         {/* Messages List */}
@@ -214,4 +216,3 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
 });
-

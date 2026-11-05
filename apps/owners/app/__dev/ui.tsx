@@ -133,4 +133,3 @@ const styles = StyleSheet.create({
     color: '#2A2420',
   },
 });
-
