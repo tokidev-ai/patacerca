@@ -20,7 +20,8 @@ Fondo `#F7F2EA` / `#FFFCF7`, texto `#2A2420`, acento `#3E8E5E`. Fuentes Bricolag
 
 ## Selección vs filtros (`Chip` vs `SearchableOptionList`)
 
-- **`SearchableOptionList` / `SearchableOptionListMulti`**: elegir valor en formularios o listas largas (zonas, barrios, etc.) — lista vertical + buscador.
+- **`SearchableOptionSelect` / `SearchableOptionSelectMulti`**: zonas y listas largas en pantallas (campo tipo dropdown → sheet con buscador). No expandir la lista inline en headers.
+- **`SearchableOptionList`**: buscador + lista (usar dentro del sheet del select, no ocupando media pantalla).
 - **`Chip` en fila horizontal**: solo filtros rápidos con **pocas opciones** (ej. “Disponible hoy”, tamaño pequeño/mediano/grande, días de la semana).
 - No usar scroll horizontal de chips para **13+ zonas**; eso confunde con filtros y esconde opciones.
 

@@ -36,7 +36,8 @@ patacerca/
 │   ├── theme/                   # Tokens, paleta de colores, tipografías y preset Tailwind
 │   ├── core/                    # Modelos, esquemas Zod, constantes, reglas de negocio e interfaces de repositorio
 │   ├── ui/                      # Componentes visuales compartidos (Button, Card, Avatar, Toast, etc.)
-│   └── data-mock/               # Repositorios mockeados (AsyncStorage + semillas)
+│   ├── data-mock/               # Repositorios mock (AsyncStorage + semillas)
+│   └── data-firebase/           # Firestore + conmutador mock/Firebase
 │
 ├── .github/workflows/ci.yml     # Validación en CI (lint, typecheck)
 └── package.json                 # Workspaces y scripts raíz
@@ -47,7 +48,7 @@ patacerca/
 ## 2. Principios de Arquitectura e Independencia
 
 - **Independencia de Apps**: Cada app (`owners` y `walkers`) tiene su propio `package.json`, su propia configuración de Expo (`app.config.ts`), sus propias pantallas y su lógica de estado. Modificar una app no afecta a la otra.
-- **Capa de Repositorios**: Toda la comunicación de datos se realiza a través de interfaces (`IAuthRepository`, `IWalkersRepository`, `IRequestsRepository`, etc.). Cambiar de datos mock a **Firebase** se logra implementando `packages/data-firebase` y sustituyendo el `DataProvider` de la app sin modificar ninguna pantalla.
+- **Capa de Repositorios**: Interfaces en `@patacerca/core`. **`EXPO_PUBLIC_USE_MOCK_DATA`** elige mock vs Firebase (ver [`docs/FIREBASE.md`](./docs/FIREBASE.md) y [`.env.example`](./.env.example)).
 - **Tokens y Diseño**: Sistema de diseño 100% fiel al prototipo oficial (colores `#F7F2EA`, `#FFFCF7`, `#3E8E5E`, `#2A2420`, tipografías Bricolage Grotesque y Figtree).
 
 ---

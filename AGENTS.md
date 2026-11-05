@@ -17,7 +17,8 @@ patacerca/                    # ← repo GitHub (npm workspaces)
     ├── ui/                   # Componentes compartidos
     ├── core/                 # Modelos, Zod, strings, reglas
     ├── theme/                # Tokens de diseño
-    └── data-mock/            # Repositorios mock (AsyncStorage)
+    ├── data-mock/            # Repositorios mock (AsyncStorage)
+    └── data-firebase/        # Firestore + factory mock/Firebase
 ```
 
 Si abres el workspace **`patacerca-app/`** (carpeta padre), la documentación canónica sigue estando aquí en **`patacerca/`**.
@@ -74,8 +75,10 @@ Cada app es **independiente**: su `app/`, `src/features/`, stores y `app.config.
 ## Estado y datos
 
 - `session.store.ts` — sesión
-- `DataProvider` / `useData()` / `useWalkerData()` — repositorios mock
-- TanStack Query para datos remotos simulados
+- `DataProvider` / `useData()` / `useWalkerData()` — `createOwnerRepositories()` / `createWalkerRepositories()` (`@patacerca/data-firebase`)
+- **`EXPO_PUBLIC_USE_MOCK_DATA=true`** (default) → `@patacerca/data-mock`; **`false`** → Firestore
+- Schema Firestore: `packages/core/src/firestore/` — guía [`docs/FIREBASE.md`](./docs/FIREBASE.md)
+- TanStack Query para datos remotos
 
 ## Secretos y archivos sensibles
 
@@ -93,7 +96,7 @@ OTP de prueba: **1234**. Teléfonos Bolivia: 8 dígitos, +591.
 
 ## Selección vs filtros
 
-- Listas largas (zonas): **`SearchableOptionList`** / **`SearchableOptionListMulti`** en `@patacerca/ui`.
+- Zonas / listas largas en UI: **`SearchableOptionSelect`** / **`SearchableOptionSelectMulti`** (campo compacto → sheet con buscador). **`SearchableOptionList`** solo dentro del sheet o casos excepcionales.
 - **`Chip` horizontal**: filtros cortos (disponible hoy, tamaño del perro, días/horarios con pocas opciones).
 
 ## Iconos de UI
