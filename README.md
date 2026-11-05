@@ -1,6 +1,9 @@
 # Patacerca — Monorepo de Apps Móviles
 
+> **Agentes / Cursor:** contexto en [`CLAUDE.md`](./CLAUDE.md), [`AGENTS.md`](./AGENTS.md) y [`.cursor/rules/`](./.cursor/rules/). Tras cada cambio ejecuta **`npm run check`** (tipos + Prettier + ESLint). Si abres el workspace padre `patacerca-app/`, la raíz del repo GitHub sigue siendo **esta carpeta**.
+
 Monorepo con las dos aplicaciones móviles nativas para la plataforma **Patacerca** (Cochabamba, Bolivia):
+
 1. **Dueños (`apps/owners`)**: Encuentra paseadores verificados cerca de tu barrio, solicita paseos y coordina.
 2. **Paseadores (`apps/walkers`)**: Registro y verificación de 4 pasos, gestión de solicitudes de paseo y perfil.
 
@@ -52,6 +55,7 @@ patacerca/
 ## 3. Funcionalidades Implementadas
 
 ### App de Dueños
+
 - **Bienvenida y Autenticación**: Login con WhatsApp (+591, 8 dígitos), código OTP de prueba (`1234`).
 - **Onboarding**: Nombre, zona en Cochabamba (13 zonas) y datos del perro (tamaño).
 - **Explorador y Filtros**: Búsqueda por zona, filtros ("Disponible hoy", "Perros grandes", "Cuida en viajes", "Hasta 20 Bs").
@@ -63,6 +67,7 @@ patacerca/
 - **Múltiples Mascotas (de la reunión)**: Posibilidad de agregar más de un perrito desde el perfil.
 
 ### App de Paseadores
+
 - **Bienvenida Oscura**: Interfaz oscura (`#2A2420`) orientada al paseador.
 - **Verificación de 4 Pasos**:
   1. Identidad (Carnet anverso, reverso y selfie).
@@ -90,4 +95,3 @@ npm run owners
 # Iniciar la App de Paseadores (puerto 8082) en otra terminal
 npm run walkers
 ```
-
