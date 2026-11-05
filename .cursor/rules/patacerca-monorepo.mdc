@@ -1,0 +1,63 @@
+---
+description: Patacerca mobile monorepo — architecture, UI patterns, and conventions
+alwaysApply: true
+---
+
+# Patacerca Monorepo
+
+**Raíz del repo GitHub:** `patacerca/` (esta carpeta). Ver también `CLAUDE.md`, `AGENTS.md`, `README.md`.
+
+## Stack
+
+- React Native + **Expo SDK 58**, **Expo Router**, TypeScript estricto
+- **Zustand** + **TanStack Query**
+- Apps: `apps/owners`, `apps/walkers`
+- Paquetes: `@patacerca/ui`, `@patacerca/core`, `@patacerca/theme`, `@patacerca/data-mock`
+
+## Diseño
+
+Fondo `#F7F2EA` / `#FFFCF7`, texto `#2A2420`, acento `#3E8E5E`. Fuentes Bricolage Grotesque + Figtree. Hex del prototipo, no palette Tailwind genérica.
+
+## Selección vs filtros (`Chip` vs `SearchableOptionList`)
+
+- **`SearchableOptionList` / `SearchableOptionListMulti`**: elegir valor en formularios o listas largas (zonas, barrios, etc.) — lista vertical + buscador.
+- **`Chip` en fila horizontal**: solo filtros rápidos con **pocas opciones** (ej. “Disponible hoy”, tamaño pequeño/mediano/grande, días de la semana).
+- No usar scroll horizontal de chips para **13+ zonas**; eso confunde con filtros y esconde opciones.
+
+## Iconos
+
+- **No emojis** (📷, ✅, etc.) como iconos de interfaz.
+- Usar **`AppIcon`** (`@patacerca/ui`, Feather) o **`@expo/vector-icons`** con colores del DS: `#3E8E5E`, `#2F6E48`, `#2A2420`, `#6B6058`.
+- WhatsApp: botón verde `#25D366` con icono Feather/FontAwesome ya definido en `WhatsAppButton`.
+
+## Formulario + botón inferior
+
+**`FormScreenLayout`** (`packages/ui`) con `footer`. Safe area inferior en el footer. Teclado: `keyboardAvoidingBehavior`. Android: `softwareKeyboardLayoutMode: 'resize'` en `app.config.ts`.
+
+## Datos
+
+`DataProvider` / `useData()` / `useWalkerData()`. Sin acoplar pantallas a AsyncStorage o Firebase directo.
+
+## Secretos
+
+No leer ni commitear `.env*`, credenciales ni PEM. Respetar `.gitignore` y `.cursorignore`.
+
+## Verificación (obligatoria tras cambios)
+
+```bash
+npm run check    # typecheck + format:check (Prettier) + lint
+```
+
+## Comandos
+
+```bash
+npm install
+npm run owners   # 8081
+npm run walkers  # 8082
+```
+
+## Evitar
+
+- Duplicar layouts teclado/safe-area si aplica `FormScreenLayout`
+- Mezclar apps owners/walkers
+- Instalar libs sin pedido explícito
