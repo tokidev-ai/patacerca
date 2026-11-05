@@ -15,6 +15,7 @@
     "@hookform/resolvers": "^3.10.0",
     "@patacerca/core": "*",
     "@patacerca/data-mock": "*",
+    "@patacerca/data-firebase": "*",
     "@patacerca/theme": "*",
     "@patacerca/ui": "*",
     "@react-native-async-storage/async-storage": "^2.1.2",
