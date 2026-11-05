@@ -4,7 +4,15 @@ import type { StyleProp, TextStyle } from 'react-native';
 
 /** Iconos Feather con colores del design system Patacerca. No usar emojis como iconos de UI. */
 export type AppIconName =
-  'camera' | 'image' | 'edit-2' | 'trash-2' | 'chevron-right' | 'search' | 'check';
+  | 'camera'
+  | 'image'
+  | 'edit-2'
+  | 'trash-2'
+  | 'chevron-right'
+  | 'chevron-down'
+  | 'search'
+  | 'x'
+  | 'check';
 
 export interface AppIconProps {
   name: AppIconName;

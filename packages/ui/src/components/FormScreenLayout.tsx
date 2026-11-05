@@ -2,13 +2,14 @@ import React from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
   StyleSheet,
   View,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from '../keyboard-aware-scroll';
+import { keyboardAvoidingBehavior } from '../keyboard';
 
 export const FORM_SCREEN_BACKGROUND = '#F7F2EA';
 
@@ -39,22 +40,22 @@ export const FormScreenLayout: React.FC<FormScreenLayoutProps> = ({
       style={[styles.safeArea, { backgroundColor }]}
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? keyboardAvoidingBehavior : undefined}
         style={styles.flex}
         keyboardVerticalOffset={keyboardVerticalOffset}
       >
-        <ScrollView
+        <KeyboardAwareScrollView
           style={styles.flex}
+          extraBottomInset={footer ? 112 : 32}
           contentContainerStyle={[
             styles.scrollContent,
             { paddingHorizontal: horizontalPadding },
             scrollContentStyle,
           ]}
-          keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           {children}
-        </ScrollView>
+        </KeyboardAwareScrollView>
         {footer ? (
           <SafeAreaView
             edges={['bottom', 'left', 'right']}
@@ -80,7 +81,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 16,
   },
   footerSafe: {
     paddingTop: 12,

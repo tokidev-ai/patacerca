@@ -15,10 +15,15 @@ export default function Index() {
       try {
         const session = await authRepository.getCurrentSession();
         if (session && session.role === 'walker') {
-          const profile = await profileRepository.getWalkerProfile(session.phone);
-          setSession(session.phone, profile);
-          router.replace('/(tabs)/requests');
-          return;
+          const profile =
+            session.walkerData ??
+            (await profileRepository.getWalkerProfile(session.phone));
+          if (profile) {
+            setSession(session.phone, profile);
+            router.replace('/(tabs)/requests');
+            return;
+          }
+          await authRepository.logout();
         }
       } catch {
         // Fallback

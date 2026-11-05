@@ -1,6 +1,7 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { View, Text, TextInput, TextInputProps, StyleSheet } from 'react-native';
 import { cleanBolivianPhone } from '@patacerca/core';
+import { useKeyboardAwareScrollOnFocus } from '../keyboard-aware-scroll';
 
 function cleanPhoneDigits(text: string): string {
   return cleanBolivianPhone(text).slice(0, 8);
@@ -69,7 +70,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
 
 type PhoneInputFieldProps = Omit<
   TextInputProps,
-  'value' | 'defaultValue' | 'onChangeText' | 'onFocus' | 'onBlur'
+  'value' | 'defaultValue' | 'onChangeText'
 > & {
   initialDigits: string;
   onDigitsChange: (text: string) => void;
@@ -83,9 +84,13 @@ const PhoneInputField: React.FC<PhoneInputFieldProps> = ({
   initialDigits,
   onDigitsChange,
   setIsFocused,
+  onFocus,
+  onBlur,
   ...props
 }) => {
   const [digits, setDigits] = useState(initialDigits);
+  const inputRef = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const scrollOnFocus = useKeyboardAwareScrollOnFocus(inputRef);
 
   const handleChange = (text: string) => {
     const cleaned = cleanPhoneDigits(text);
@@ -95,13 +100,21 @@ const PhoneInputField: React.FC<PhoneInputFieldProps> = ({
 
   return (
     <TextInput
+      ref={inputRef}
       value={digits}
       onChangeText={handleChange}
       keyboardType="number-pad"
       placeholder="Ej. 71234567"
       placeholderTextColor="#8A7D70"
-      onFocus={() => setIsFocused(true)}
-      onBlur={() => setIsFocused(false)}
+      onFocus={(event) => {
+        setIsFocused(true);
+        scrollOnFocus();
+        onFocus?.(event);
+      }}
+      onBlur={(event) => {
+        setIsFocused(false);
+        onBlur?.(event);
+      }}
       style={styles.input}
       maxLength={8}
       {...props}

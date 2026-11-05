@@ -1,26 +1,27 @@
 import React, { useState, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  FlatList,
-  TouchableOpacity,
-  TextInput,
-} from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import {
   Avatar,
   VerifiedBadge,
-  Chip,
   EmptyState,
-  SearchableOptionList,
+  SearchableOptionSelect,
+  SearchField,
+  ToggleFilterSelect,
+  type ToggleFilterItem,
 } from '@patacerca/ui';
 import { Walker, COCHABAMBA_ZONES } from '@patacerca/core';
 import { useData } from '../../../providers/DataProvider';
 import { useSessionStore } from '../../../store/session.store';
+
+const WALKER_FILTER_ITEMS: ToggleFilterItem[] = [
+  { id: 'today', label: 'Disponible hoy' },
+  { id: 'large', label: 'Acepta perros grandes' },
+  { id: 'travel', label: 'Cuida en viajes' },
+  { id: 'price', label: 'Hasta 20 Bs (paseo 30 min)' },
+];
 
 export const SearchScreen: React.FC = () => {
   const router = useRouter();
@@ -55,12 +56,45 @@ export const SearchScreen: React.FC = () => {
       }),
   });
 
-  const clearFilters = () => {
-    setSearchQuery('');
+  const filterValues = useMemo(
+    () => ({
+      today: onlyAvailableToday,
+      large: acceptsLargeDogs,
+      travel: travelCare,
+      price: maxPrice20,
+    }),
+    [onlyAvailableToday, acceptsLargeDogs, travelCare, maxPrice20]
+  );
+
+  const handleFilterToggle = (id: string, next: boolean) => {
+    switch (id) {
+      case 'today':
+        setOnlyAvailableToday(next);
+        break;
+      case 'large':
+        setAcceptsLargeDogs(next);
+        break;
+      case 'travel':
+        setTravelCare(next);
+        break;
+      case 'price':
+        setMaxPrice20(next);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const clearFilterToggles = () => {
     setOnlyAvailableToday(false);
     setAcceptsLargeDogs(false);
     setTravelCare(false);
     setMaxPrice20(false);
+  };
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    clearFilterToggles();
   };
 
   const hasActiveFilters =
@@ -78,6 +112,15 @@ export const SearchScreen: React.FC = () => {
     });
     return { inZoneCount: inZone, nearbyCount: nearby };
   }, [walkers, selectedZone]);
+
+  const resultsSummary = useMemo(() => {
+    if (inZoneCount > 0 && nearbyCount > 0) {
+      return `${inZoneCount} en ${selectedZone} · ${nearbyCount} cerca`;
+    }
+    if (inZoneCount > 0) return `${inZoneCount} en ${selectedZone}`;
+    if (nearbyCount > 0) return `${nearbyCount} en zonas cercanas`;
+    return `Sin resultados en ${selectedZone}`;
+  }, [inZoneCount, nearbyCount, selectedZone]);
 
   const renderWalkerCard = ({ item }: { item: Walker }) => {
     const isExactZone = item.zone.toLowerCase() === selectedZone.toLowerCase();
@@ -116,78 +159,63 @@ export const SearchScreen: React.FC = () => {
     );
   };
 
+  const listHeader = (
+    <View style={styles.listHeader}>
+      <Text style={styles.resultsCounter}>{resultsSummary}</Text>
+      {hasActiveFilters ? (
+        <TouchableOpacity onPress={clearFilters} hitSlop={8}>
+          <Text style={styles.clearFilters}>Limpiar</Text>
+        </TouchableOpacity>
+      ) : null}
+    </View>
+  );
+
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
-      <View style={styles.header}>
-        <Text style={styles.greeting}>Hola, {owner?.name || 'Amigo'}</Text>
-        <Text style={styles.title}>Paseadores cerca de ti</Text>
+      <View style={styles.topBar}>
+        <View style={styles.titleRow}>
+          <View style={styles.titleBlock}>
+            <Text style={styles.greeting}>Hola, {owner?.name?.split(' ')[0] || 'Amigo'}</Text>
+            <Text style={styles.title}>Paseadores cerca de ti</Text>
+          </View>
+        </View>
 
-        <View style={styles.zonePickerSection}>
-          <Text style={styles.zonePickerLabel}>Zona</Text>
-          <SearchableOptionList
+        <SearchField
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Buscar por nombre…"
+          containerStyle={styles.searchBar}
+        />
+
+        <View style={styles.selectorRow}>
+          <SearchableOptionSelect
+            variant="chip"
+            chipLabel="Selecciona tu zona"
             options={COCHABAMBA_ZONES}
             value={selectedZone}
             onChange={setSelectedZone}
-            searchPlaceholder="Buscar barrio para filtrar…"
-            maxListHeight={160}
+            searchPlaceholder="Buscar barrio…"
+            sheetTitle="Selecciona tu zona"
+          />
+          <ToggleFilterSelect
+            items={WALKER_FILTER_ITEMS}
+            values={filterValues}
+            onToggle={handleFilterToggle}
+            onClearAll={clearFilterToggles}
+            sheetTitle="Filtrar paseadores"
           />
         </View>
-
-        <View style={styles.inputWrapper}>
-          <TextInput
-            placeholder="Buscar por nombre..."
-            placeholderTextColor="#8A7D70"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            style={styles.searchInput}
-          />
-        </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filtersScroll}
-        >
-          <Chip
-            label="Disponible hoy"
-            selected={onlyAvailableToday}
-            onPress={() => setOnlyAvailableToday(!onlyAvailableToday)}
-            size="sm"
-          />
-          <Chip
-            label="Perros grandes"
-            selected={acceptsLargeDogs}
-            onPress={() => setAcceptsLargeDogs(!acceptsLargeDogs)}
-            size="sm"
-          />
-          <Chip
-            label="Cuida en viajes"
-            selected={travelCare}
-            onPress={() => setTravelCare(!travelCare)}
-            size="sm"
-          />
-          <Chip
-            label="Hasta 20 Bs"
-            selected={maxPrice20}
-            onPress={() => setMaxPrice20(!maxPrice20)}
-            size="sm"
-          />
-        </ScrollView>
-
-        <Text style={styles.resultsCounter}>
-          {inZoneCount > 0
-            ? `${inZoneCount} en ${selectedZone}`
-            : `Ninguno en ${selectedZone} todavía`}
-          {nearbyCount > 0 ? ` · ${nearbyCount} en zonas cercanas` : ''}
-        </Text>
       </View>
 
       <FlatList
         data={walkers}
         keyExtractor={(item) => item.id}
         renderItem={renderWalkerCard}
+        ListHeaderComponent={listHeader}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         ListEmptyComponent={
           !isLoading ? (
             <EmptyState
@@ -208,61 +236,67 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F7F2EA',
   },
-  header: {
+  topBar: {
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 8,
+    paddingTop: 12,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E6DCCD',
+    backgroundColor: '#F7F2EA',
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  titleBlock: {
+    flex: 1,
+    minWidth: 0,
   },
   greeting: {
     fontFamily: 'Figtree_400Regular',
-    fontSize: 14,
+    fontSize: 13,
     color: '#6B6058',
     marginBottom: 2,
   },
   title: {
     fontFamily: 'BricolageGrotesque_700Bold',
-    fontSize: 28,
+    fontSize: 24,
+    lineHeight: 28,
     color: '#2A2420',
-    letterSpacing: -0.84,
-    marginBottom: 12,
+    letterSpacing: -0.72,
   },
-  zonePickerSection: {
+  searchBar: {
     marginBottom: 10,
   },
-  zonePickerLabel: {
-    fontFamily: 'Figtree_600SemiBold',
-    fontSize: 13,
-    color: '#6B6058',
-    marginBottom: 6,
+  selectorRow: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: 10,
   },
-  inputWrapper: {
+  listHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 10,
-  },
-  searchInput: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: '#E6DCCD',
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    fontSize: 15,
-    fontFamily: 'Figtree_400Regular',
-    color: '#2A2420',
-  },
-  filtersScroll: {
-    gap: 6,
-    paddingBottom: 4,
+    paddingTop: 4,
   },
   resultsCounter: {
-    fontFamily: 'Figtree_400Regular',
+    flex: 1,
+    fontFamily: 'Figtree_500Medium',
     fontSize: 13,
     color: '#6B6058',
-    marginTop: 8,
-    marginBottom: 4,
+  },
+  clearFilters: {
+    fontFamily: 'Figtree_600SemiBold',
+    fontSize: 13,
+    color: '#3E8E5E',
+    marginLeft: 12,
   },
   listContent: {
     paddingHorizontal: 20,
-    paddingTop: 6,
+    paddingTop: 12,
     paddingBottom: 24,
     gap: 10,
   },

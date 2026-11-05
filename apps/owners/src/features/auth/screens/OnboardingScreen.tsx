@@ -7,7 +7,7 @@ import {
   Chip,
   Field,
   FormScreenLayout,
-  SearchableOptionList,
+  SearchableOptionSelect,
 } from '@patacerca/ui';
 import {
   COCHABAMBA_ZONES,
@@ -90,14 +90,14 @@ export const OnboardingScreen: React.FC = () => {
       </Field>
 
       <View style={styles.fieldSection}>
-        <Text style={styles.fieldLabel}>Tu zona en Cochabamba</Text>
-        <Text style={styles.fieldHint}>Busca y elige tu barrio</Text>
-        <SearchableOptionList
+        <Text style={styles.fieldHint}>Tu zona en Cochabamba</Text>
+        <SearchableOptionSelect
+          label="Barrio"
           options={COCHABAMBA_ZONES}
           value={zone}
           onChange={setZone}
           searchPlaceholder="Buscar barrio…"
-          maxListHeight={200}
+          sheetTitle="Busca y elige tu barrio"
         />
       </View>
 

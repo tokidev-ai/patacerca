@@ -6,13 +6,7 @@ import {
   IChatRepository,
   IProfileRepository,
 } from '@patacerca/core';
-import {
-  MockAuthRepository,
-  MockWalkersRepository,
-  MockRequestsRepository,
-  MockChatRepository,
-  MockProfileRepository,
-} from '@patacerca/data-mock';
+import { createOwnerRepositories } from '@patacerca/data-firebase';
 
 interface DataContextValue {
   authRepository: IAuthRepository;
@@ -25,16 +19,7 @@ interface DataContextValue {
 const DataContext = createContext<DataContextValue | null>(null);
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const value = useMemo<DataContextValue>(
-    () => ({
-      authRepository: new MockAuthRepository(),
-      walkersRepository: new MockWalkersRepository(),
-      requestsRepository: new MockRequestsRepository(),
-      chatRepository: new MockChatRepository(),
-      profileRepository: new MockProfileRepository(),
-    }),
-    []
-  );
+  const value = useMemo<DataContextValue>(() => createOwnerRepositories(), []);
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };

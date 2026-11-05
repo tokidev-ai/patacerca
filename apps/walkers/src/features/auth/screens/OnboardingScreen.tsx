@@ -6,7 +6,7 @@ import {
   Input,
   Field,
   FormScreenLayout,
-  SearchableOptionList,
+  SearchableOptionSelect,
 } from '@patacerca/ui';
 import { COCHABAMBA_ZONES, DEFAULT_ZONE, Walker, APP_STRINGS } from '@patacerca/core';
 import { useWalkerData } from '../../../providers/DataProvider';
@@ -88,14 +88,14 @@ export const OnboardingScreen: React.FC = () => {
       </Field>
 
       <View style={styles.fieldSection}>
-        <Text style={styles.fieldLabel}>Zona donde vives</Text>
-        <Text style={styles.fieldHint}>Elige tu barrio en la lista</Text>
-        <SearchableOptionList
+        <Text style={styles.fieldHint}>Zona donde vives</Text>
+        <SearchableOptionSelect
+          label="Barrio"
           options={COCHABAMBA_ZONES}
           value={zone}
           onChange={setZone}
           searchPlaceholder="Buscar barrio…"
-          maxListHeight={200}
+          sheetTitle="Elige tu barrio"
         />
       </View>
 

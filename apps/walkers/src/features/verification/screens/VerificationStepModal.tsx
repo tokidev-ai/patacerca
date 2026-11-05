@@ -4,7 +4,6 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   KeyboardAvoidingView,
   TouchableOpacity,
   Pressable,
@@ -21,6 +20,7 @@ import {
   PhoneInput,
   UploadTile,
   Field,
+  KeyboardAwareScrollView,
   keyboardAvoidingBehavior,
   pickImageFromLibraryOrCamera,
 } from '@patacerca/ui';
@@ -259,9 +259,9 @@ export const VerificationStepModal: React.FC<VerificationStepModalProps> = ({
             <IconButton icon="close" onPress={onClose} />
           </View>
 
-          <ScrollView
+          <KeyboardAwareScrollView
             showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
+            extraBottomInset={100}
             contentContainerStyle={styles.scrollContent}
           >
             {step === 1 && (
@@ -471,7 +471,7 @@ export const VerificationStepModal: React.FC<VerificationStepModalProps> = ({
             )}
 
             {Boolean(error) && <Text style={styles.errorText}>{error}</Text>}
-          </ScrollView>
+          </KeyboardAwareScrollView>
 
           <SafeAreaView edges={['bottom', 'left', 'right']} style={styles.footer}>
             <Button title="Guardar" onPress={handleSave} loading={saving} size="lg" />

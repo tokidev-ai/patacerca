@@ -3,9 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
-  TextInput,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -15,7 +13,13 @@ import DateTimePicker, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, IconButton, keyboardAvoidingBehavior } from '@patacerca/ui';
+import {
+  Button,
+  IconButton,
+  Input,
+  KeyboardAwareScrollView,
+  keyboardAvoidingBehavior,
+} from '@patacerca/ui';
 import {
   APP_STRINGS,
   formatTimeHHmm,
@@ -158,9 +162,9 @@ export const RequestWalkModal: React.FC = () => {
           <IconButton icon="close" onPress={handleClose} />
         </View>
 
-        <ScrollView
+        <KeyboardAwareScrollView
           showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
+          extraBottomInset={120}
           contentContainerStyle={styles.scrollContent}
         >
           <Text style={styles.sectionLabel}>Duración</Text>
@@ -297,16 +301,15 @@ export const RequestWalkModal: React.FC = () => {
             Nota para {walker?.name || 'el paseador'}{' '}
             <Text style={styles.optional}>(opcional)</Text>
           </Text>
-          <TextInput
+          <Input
             value={note}
             onChangeText={setNote}
             placeholder="Ej. Tira de la correa, no le gustan las motos"
-            placeholderTextColor="#8A7D70"
             multiline
             numberOfLines={2}
             style={styles.noteInput}
           />
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
         <View style={styles.footer}>
           <View style={styles.totalRow}>
