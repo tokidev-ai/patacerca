@@ -1,5 +1,19 @@
-import { IAuthRepository, SessionUser, UserRole } from '@patacerca/core';
+import {
+  IAuthRepository,
+  SessionUser,
+  UserRole,
+  type VerifyOtpResult,
+  type Walker,
+} from '@patacerca/core';
 import { mockStorage } from '../storage/mock-storage';
+import { INITIAL_WALKERS } from '../seeds/walkers.seed';
+
+const WALKERS_LIST_KEY = '@patacerca:walkers';
+
+async function findMockWalkerByPhone(phone: string): Promise<Walker | null> {
+  const list = await mockStorage.getItem<Walker[]>(WALKERS_LIST_KEY, INITIAL_WALKERS);
+  return list.find((w) => w.phone === phone) ?? null;
+}
 
 const SESSION_STORAGE_KEY = '@patacerca:session';
 
@@ -13,28 +27,32 @@ export class MockAuthRepository implements IAuthRepository {
     phone: string,
     code: string,
     role: UserRole
-  ): Promise<{ exists: boolean; user?: SessionUser }> {
+  ): Promise<VerifyOtpResult> {
     if (code !== '1234') {
-      return { exists: false };
+      return { exists: false, otpValid: false };
     }
 
-    // Check if user already has an existing profile
-    const profileKey =
-      role === 'owner' ? `@patacerca:owner:${phone}` : `@patacerca:walker:${phone}`;
-    const existing = await mockStorage.getItem<any | null>(profileKey, null);
+    if (role === 'owner') {
+      const existing = await mockStorage.getItem<any | null>(
+        `@patacerca:owner:${phone}`,
+        null
+      );
+      if (existing) {
+        const sessionUser: SessionUser = { phone, role, ownerData: existing };
+        await this.saveSession(sessionUser);
+        return { exists: true, user: sessionUser };
+      }
+      return { exists: false, otpValid: true };
+    }
 
-    if (existing) {
-      const sessionUser: SessionUser = {
-        phone,
-        role,
-        ownerData: role === 'owner' ? existing : undefined,
-        walkerData: role === 'walker' ? existing : undefined,
-      };
+    const walker = await findMockWalkerByPhone(phone);
+    if (walker) {
+      const sessionUser: SessionUser = { phone, role, walkerData: walker };
       await this.saveSession(sessionUser);
       return { exists: true, user: sessionUser };
     }
 
-    return { exists: false };
+    return { exists: false, otpValid: true };
   }
 
   async getCurrentSession(): Promise<SessionUser | null> {

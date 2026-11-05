@@ -5,7 +5,6 @@ import {
   Text,
   StyleSheet,
   TouchableWithoutFeedback,
-  ScrollView,
   TouchableOpacity,
   Image,
   Alert,
@@ -20,6 +19,7 @@ import { Button } from './Button';
 import { IconButton } from './IconButton';
 import { AppIcon } from './AppIcon';
 import { keyboardAvoidingBehavior } from '../keyboard';
+import { KeyboardAwareScrollView } from '../keyboard-aware-scroll';
 
 export interface PetAddModalProps {
   visible: boolean;
@@ -153,10 +153,10 @@ const PetAddModalForm: React.FC<PetAddModalFormProps> = ({
           <IconButton icon="close" size={36} onPress={onClose} />
         </View>
 
-        <ScrollView
+        <KeyboardAwareScrollView
           style={styles.formScroll}
           contentContainerStyle={styles.formScrollContent}
-          keyboardShouldPersistTaps="handled"
+          extraBottomInset={96}
           showsVerticalScrollIndicator={false}
         >
           <Text style={styles.sectionLabel}>Foto (opcional)</Text>
@@ -213,7 +213,7 @@ const PetAddModalForm: React.FC<PetAddModalFormProps> = ({
             value={breed}
             onChangeText={setBreed}
           />
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
         <View style={styles.footer}>
           <Button

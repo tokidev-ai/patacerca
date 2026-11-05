@@ -1,5 +1,17 @@
 import { IProfileRepository, Owner, Walker, Pet } from '@patacerca/core';
 import { mockStorage } from '../storage/mock-storage';
+import { INITIAL_WALKERS } from '../seeds/walkers.seed';
+
+const WALKERS_LIST_KEY = '@patacerca:walkers';
+
+async function findMockWalkerByIdOrPhone(idOrPhone: string): Promise<Walker | null> {
+  const key = idOrPhone.trim();
+  const stored = await mockStorage.getItem<Walker | null>(`@patacerca:walker:${key}`, null);
+  if (stored) return stored;
+
+  const list = await mockStorage.getItem<Walker[]>(WALKERS_LIST_KEY, INITIAL_WALKERS);
+  return list.find((w) => w.id === key || w.phone === key) ?? null;
+}
 
 export class MockProfileRepository implements IProfileRepository {
   private getOwnerKey(phone: string): string {
@@ -73,8 +85,8 @@ export class MockProfileRepository implements IProfileRepository {
     return updated;
   }
 
-  async getWalkerProfile(walkerId: string): Promise<Walker | null> {
-    return mockStorage.getItem<Walker | null>(this.getWalkerKey(walkerId), null);
+  async getWalkerProfile(walkerIdOrPhone: string): Promise<Walker | null> {
+    return findMockWalkerByIdOrPhone(walkerIdOrPhone);
   }
 
   async saveWalkerProfile(walker: Walker): Promise<Walker> {

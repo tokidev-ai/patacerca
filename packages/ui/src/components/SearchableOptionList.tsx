@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { AppIcon } from './AppIcon';
+import { useKeyboardAwareScrollOnFocus } from '../keyboard-aware-scroll';
 
 function normalizeForSearch(text: string): string {
   return text
@@ -80,6 +81,8 @@ const SearchableOptionListBase: React.FC<{
   renderRows: (filtered: readonly string[]) => React.ReactNode;
 }> = ({ options, searchPlaceholder, maxListHeight, emptyMessage, style, renderRows }) => {
   const [query, setQuery] = useState('');
+  const searchRef = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const scrollSearchOnFocus = useKeyboardAwareScrollOnFocus(searchRef);
 
   const filtered = useMemo(() => {
     const q = normalizeForSearch(query);
@@ -92,6 +95,7 @@ const SearchableOptionListBase: React.FC<{
       <View style={styles.searchWrap}>
         <AppIcon name="search" size={18} color="#8A7D70" style={styles.searchIcon} />
         <TextInput
+          ref={searchRef}
           value={query}
           onChangeText={setQuery}
           placeholder={searchPlaceholder}
@@ -100,6 +104,7 @@ const SearchableOptionListBase: React.FC<{
           autoCorrect={false}
           autoCapitalize="none"
           clearButtonMode="while-editing"
+          onFocus={scrollSearchOnFocus}
         />
       </View>
       <ScrollView

@@ -7,14 +7,7 @@ import {
   IVerificationRepository,
   IProfileRepository,
 } from '@patacerca/core';
-import {
-  MockAuthRepository,
-  MockWalkersRepository,
-  MockRequestsRepository,
-  MockChatRepository,
-  MockVerificationRepository,
-  MockProfileRepository,
-} from '@patacerca/data-mock';
+import { createWalkerRepositories } from '@patacerca/data-firebase';
 
 interface WalkerDataContextValue {
   authRepository: IAuthRepository;
@@ -30,17 +23,7 @@ const DataContext = createContext<WalkerDataContextValue | null>(null);
 export const WalkerDataProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const value = useMemo<WalkerDataContextValue>(
-    () => ({
-      authRepository: new MockAuthRepository(),
-      walkersRepository: new MockWalkersRepository(),
-      requestsRepository: new MockRequestsRepository(),
-      chatRepository: new MockChatRepository(),
-      verificationRepository: new MockVerificationRepository(),
-      profileRepository: new MockProfileRepository(),
-    }),
-    []
-  );
+  const value = useMemo<WalkerDataContextValue>(() => createWalkerRepositories(), []);
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };

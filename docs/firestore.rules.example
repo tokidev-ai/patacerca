@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ⚠️ DESARROLLO TEMPRANO — abrir todo. Sustituir antes de producción.
+    match /{document=**} {
+      allow read, write: if true;
+    }
+
+    // Ejemplo futuro (requiere Firebase Auth + custom claims):
+    // match /owners/{phone} {
+    //   allow read, write: if request.auth != null && request.auth.token.phone == phone;
+    // }
+  }
+}

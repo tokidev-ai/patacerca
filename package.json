@@ -14,9 +14,11 @@
     "format:check": "prettier --check \"apps/**/*.{ts,tsx}\" \"packages/**/*.{ts,tsx}\" \"*.{md,json,js}\"",
     "lint": "eslint \"apps/**/*.{ts,tsx}\" \"packages/**/*.{ts,tsx}\"",
     "check": "npm run typecheck && npm run format:check && npm run lint",
+    "seed:firestore": "tsx packages/data-firebase/scripts/seed-firestore.ts",
     "test": "npm run --workspaces --if-present test"
   },
   "devDependencies": {
+    "tsx": "^4.19.4",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~58.0.4",
     "prettier": "^3.4.2",

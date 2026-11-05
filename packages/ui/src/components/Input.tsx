@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { TextInput, TextInputProps, StyleSheet, View, Text } from 'react-native';
+import { useKeyboardAwareScrollOnFocus } from '../keyboard-aware-scroll';
 
 export interface InputProps extends TextInputProps {
   error?: string;
@@ -13,17 +14,29 @@ export const Input: React.FC<InputProps> = ({
   style,
   multiline,
   numberOfLines = 1,
+  onFocus,
+  onBlur,
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const scrollOnFocus = useKeyboardAwareScrollOnFocus(inputRef);
 
   return (
     <View style={styles.wrapper}>
       {label && <Text style={styles.label}>{label}</Text>}
       <TextInput
+        ref={inputRef}
         placeholderTextColor="#8A7D70"
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        onFocus={(event) => {
+          setIsFocused(true);
+          scrollOnFocus();
+          onFocus?.(event);
+        }}
+        onBlur={(event) => {
+          setIsFocused(false);
+          onBlur?.(event);
+        }}
         multiline={multiline}
         numberOfLines={numberOfLines}
         style={[

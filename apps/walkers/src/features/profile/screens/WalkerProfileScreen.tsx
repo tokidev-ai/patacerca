@@ -16,7 +16,7 @@ import {
   Button,
   IconButton,
   Chip,
-  SearchableOptionListMulti,
+  SearchableOptionSelectMulti,
 } from '@patacerca/ui';
 import {
   COCHABAMBA_ZONES,
@@ -227,12 +227,13 @@ export const WalkerProfileScreen: React.FC = () => {
           <Text style={styles.sectionHint}>
             Marca todas las zonas donde puedes pasear (mínimo una)
           </Text>
-          <SearchableOptionListMulti
+          <SearchableOptionSelectMulti
+            label="Zonas"
             options={COCHABAMBA_ZONES}
             values={selectedZones}
             onChange={setSelectedZones}
             searchPlaceholder="Buscar zona…"
-            maxListHeight={220}
+            sheetTitle="Zonas donde paseas"
             minSelected={1}
           />
         </View>

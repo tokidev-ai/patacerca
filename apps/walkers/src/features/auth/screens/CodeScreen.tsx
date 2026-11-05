@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Button, IconButton, OtpInput, FormScreenLayout } from '@patacerca/ui';
-import { APP_STRINGS } from '@patacerca/core';
+import { cleanBolivianPhone, APP_STRINGS } from '@patacerca/core';
 import { useWalkerData } from '../../../providers/DataProvider';
 import { useWalkerSessionStore } from '../../../store/session.store';
 import { useToastStore } from '../../../store/toast.store';
@@ -10,7 +10,7 @@ import { useToastStore } from '../../../store/toast.store';
 export const CodeScreen: React.FC = () => {
   const router = useRouter();
   const { phone } = useLocalSearchParams<{ phone: string }>();
-  const { profileRepository } = useWalkerData();
+  const { authRepository } = useWalkerData();
   const { setSession } = useWalkerSessionStore();
   const { showToast } = useToastStore();
 
@@ -19,27 +19,41 @@ export const CodeScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const handleVerify = async () => {
-    if (code !== '1234') {
+    const userPhone = cleanBolivianPhone(phone || '');
+    if (!userPhone) {
+      setError(APP_STRINGS.errors.invalidBolivianPhone);
+      return;
+    }
+    if (!code.trim()) {
       setError(APP_STRINGS.errors.invalidOtp);
       return;
     }
+
     setError('');
     setLoading(true);
 
     try {
-      const userPhone = phone || '71110001';
-      const existingWalker = await profileRepository.getWalkerProfile(userPhone);
+      const result = await authRepository.verifyOtp(userPhone, code.trim(), 'walker');
 
-      if (existingWalker) {
-        setSession(userPhone, existingWalker);
-        showToast(APP_STRINGS.toasts.welcomeBack(existingWalker.name));
+      if (result.exists && result.user?.walkerData) {
+        const walker = result.user.walkerData;
+        setSession(userPhone, walker);
+        showToast(APP_STRINGS.toasts.welcomeBack(walker.name));
         router.replace('/(tabs)/requests');
-      } else {
+        return;
+      }
+
+      if (result.otpValid) {
         router.push({
           pathname: '/(auth)/onboarding',
           params: { phone: userPhone },
         });
+        return;
       }
+
+      setError(APP_STRINGS.errors.invalidOtp);
+    } catch {
+      setError(APP_STRINGS.errors.invalidOtp);
     } finally {
       setLoading(false);
     }
@@ -76,7 +90,9 @@ export const CodeScreen: React.FC = () => {
           error={error}
           autoFocus
         />
-        <Text style={styles.hint}>Código de prueba: 1234</Text>
+        <Text style={styles.hint}>
+          Revisa Firestore otpSessions o usa el código de EXPO_PUBLIC_OTP_FIXED_CODE
+        </Text>
       </View>
     </FormScreenLayout>
   );
@@ -112,5 +128,6 @@ const styles = StyleSheet.create({
     color: '#8A7D70',
     marginTop: 12,
     textAlign: 'center',
+    paddingHorizontal: 8,
   },
 });
