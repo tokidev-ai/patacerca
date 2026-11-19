@@ -114,8 +114,9 @@ export interface OtpSessionDocument {
 /** userAccounts/{uid} — vincula la cuenta de Firebase Auth (correo) con el teléfono del perfil */
 export interface UserAccountDocument {
   email: string;
+  /** Vacío para administradores. */
   phone: string;
-  role: 'owner' | 'walker';
+  role: 'owner' | 'walker' | 'admin';
   createdAt: number;
 }
 
