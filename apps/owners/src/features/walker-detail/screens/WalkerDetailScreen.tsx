@@ -63,7 +63,12 @@ export const WalkerDetailScreen: React.FC = () => {
             </View>
 
             <View style={styles.headerInfo}>
-              <Avatar name={walker.name} colorName={walker.colorName} size={80} />
+              <Avatar
+                name={walker.name}
+                colorName={walker.colorName}
+                size={80}
+                imageUri={walker.photoUrl}
+              />
               <Text style={styles.headerName}>{walker.name}</Text>
               <Text style={styles.headerSubtitle}>
                 {walker.zone} · {walker.distanceText}

@@ -64,7 +64,9 @@ export const CodeScreen: React.FC = () => {
       </View>
 
       <Text style={styles.title}>Ingresa el código</Text>
-      <Text style={styles.subtitle}>Lo enviamos por WhatsApp al +591 {phone}.</Text>
+      <Text style={styles.subtitle}>
+        Ingresa el código de verificación para +591 {phone}.
+      </Text>
 
       <View style={styles.inputWrapper}>
         <OtpInput

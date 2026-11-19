@@ -11,7 +11,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Avatar, Button, PetAddModal, PetDetailModal, AppIcon } from '@patacerca/ui';
+import {
+  AvatarPicker,
+  Button,
+  PetAddModal,
+  PetDetailModal,
+  AppIcon,
+} from '@patacerca/ui';
 import { Pet, PetSize } from '@patacerca/core';
 import { useData } from '../../../providers/DataProvider';
 import { useSessionStore } from '../../../store/session.store';
@@ -46,12 +52,33 @@ export const ProfileScreen: React.FC = () => {
   const handleLogout = async () => {
     await authRepository.logout();
     clearSession();
-    router.replace('/(auth)/welcome');
+    router.replace('/(auth)/login');
   };
 
   const persistOwner = (updated: NonNullable<typeof owner>) => {
     if (!phone) return;
     setSession(phone, updated);
+  };
+
+  const [photoLoading, setPhotoLoading] = useState(false);
+
+  const handleChangePhoto = async (uri: string) => {
+    if (!owner) return;
+    setPhotoLoading(true);
+    try {
+      const updated = await profileRepository.saveOwnerProfile({
+        ...owner,
+        photoUrl: uri,
+      });
+      persistOwner(updated);
+      showToast('Foto de perfil actualizada');
+    } catch (e) {
+      console.warn('[foto] falló:', e);
+      const detail = __DEV__ && e instanceof Error ? ` (${e.message})` : '';
+      showToast(`No pudimos subir la foto. Intenta de nuevo.${detail}`);
+    } finally {
+      setPhotoLoading(false);
+    }
   };
 
   const handleAddPet = async (petData: {
@@ -160,7 +187,14 @@ export const ProfileScreen: React.FC = () => {
         <Text style={styles.title}>Perfil</Text>
 
         <View style={styles.profileCard}>
-          <Avatar name={owner?.name || 'Dueño'} colorName="green" size={64} />
+          <AvatarPicker
+            name={owner?.name || 'Dueño'}
+            colorName="green"
+            size={64}
+            uri={owner?.photoUrl}
+            onChange={handleChangePhoto}
+            loading={photoLoading}
+          />
           <View style={styles.profileInfo}>
             <Text style={styles.name}>{owner?.name || 'Dueño'}</Text>
             <Text style={styles.meta}>
