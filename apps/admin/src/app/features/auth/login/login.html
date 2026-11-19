@@ -1,0 +1,62 @@
+<main class="grid min-h-screen place-items-center px-4 py-6">
+  <form
+    #f="ngForm"
+    class="border-line bg-card flex w-full max-w-105 flex-col gap-4 rounded-2xl border px-7 py-8"
+    (ngSubmit)="submit()"
+  >
+    <div class="font-display flex items-center gap-2 text-xl font-bold">
+      <span class="bg-brand size-3 rounded-full"></span>
+      patacerca <em class="text-ink-faint font-medium not-italic">admin</em>
+    </div>
+
+    <div>
+      <h1 class="font-display text-3xl leading-tight font-bold tracking-tight">Inicia sesión</h1>
+      <p class="text-ink-soft mt-1">Panel para revisar y aprobar a los paseadores.</p>
+    </div>
+
+    @if (!configured) {
+      <div class="bg-danger-soft text-danger rounded-xl px-3.5 py-3">
+        Falta configurar Firebase: completa
+        <code class="text-[13px]">src/environments/environment.ts</code>.
+      </div>
+    }
+
+    <label class="flex flex-col gap-1.5 font-semibold">
+      Correo
+      <input
+        type="email"
+        name="email"
+        class="border-line focus:border-brand rounded-xl border-[1.5px] bg-white px-3.5 py-3 font-normal outline-none"
+        placeholder="admin@patacerca.com"
+        autocomplete="username"
+        required
+        [(ngModel)]="email"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1.5 font-semibold">
+      Contraseña
+      <input
+        type="password"
+        name="password"
+        class="border-line focus:border-brand rounded-xl border-[1.5px] bg-white px-3.5 py-3 font-normal outline-none"
+        placeholder="Tu contraseña"
+        autocomplete="current-password"
+        required
+        [(ngModel)]="password"
+      />
+    </label>
+
+    @if (error()) {
+      <div class="bg-danger-soft text-danger rounded-xl px-3.5 py-3">{{ error() }}</div>
+    }
+
+    <button
+      type="submit"
+      class="bg-brand text-card hover:bg-brand-dark rounded-xl px-5 py-3 font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55"
+      [disabled]="loading() || !configured || f.invalid"
+    >
+      {{ loading() ? 'Ingresando…' : 'Ingresar' }}
+    </button>
+  </form>
+</main>

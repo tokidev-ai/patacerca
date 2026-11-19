@@ -1,0 +1,28 @@
+@import 'tailwindcss';
+
+/* Paleta y tipografías de Patacerca (mismos tokens que las apps móviles). */
+@theme {
+  --color-bg: #f7f2ea;
+  --color-card: #fffcf7;
+  --color-sand: #efe6d8;
+  --color-ink: #2a2420;
+  --color-ink-soft: #6b6058;
+  --color-ink-faint: #8a7d70;
+  --color-line: #e6dccd;
+  --color-brand: #3e8e5e;
+  --color-brand-dark: #2f6e48;
+  --color-brand-soft: #e4efe6;
+  --color-amber: #a8691c;
+  --color-amber-soft: #f8ead3;
+  --color-danger: #b4472b;
+  --color-danger-soft: #fbf0ec;
+
+  --font-sans: 'Figtree', system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Figtree', sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-bg font-sans text-[15px] leading-relaxed text-ink;
+  }
+}

@@ -1,0 +1,12 @@
+<span
+  class="font-display bg-brand-soft text-brand-dark inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full font-bold"
+  [style.width.px]="size()"
+  [style.height.px]="size()"
+  [style.font-size.px]="size() * 0.38"
+>
+  @if (showImage()) {
+    <img class="h-full w-full object-cover" [src]="url()" [alt]="name()" (error)="onError()" />
+  } @else {
+    {{ text() }}
+  }
+</span>
