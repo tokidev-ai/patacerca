@@ -44,3 +44,15 @@ export function formatBolivianPhoneForDisplay(raw: string): string {
   ].filter((part) => part.length > 0);
   return chunks.join(' ');
 }
+
+/** Largo mínimo de contraseña al registrarse. */
+export const MIN_PASSWORD_LENGTH = 6;
+
+/** Correo en minúsculas y sin espacios (clave de login). */
+export function normalizeEmail(raw: string): string {
+  return raw.trim().toLowerCase();
+}
+
+export function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+}

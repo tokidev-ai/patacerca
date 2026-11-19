@@ -12,6 +12,7 @@ export * from './OptionSheet';
 export * from './ToggleFilterSelect';
 export * from './Segmented';
 export * from './Avatar';
+export * from './AvatarPicker';
 export * from './VerifiedBadge';
 export * from './StatusPill';
 export * from './Card';

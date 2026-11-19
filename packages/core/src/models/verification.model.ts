@@ -9,6 +9,14 @@ export interface VerificationData {
   ref2Name: string;
   ref2Phone: string;
   interviewSlot: string;
+  /**
+   * Fotos de verificación: al guardar se pasa la URI local; el repositorio Firebase
+   * las sube a Storage y devuelve/persiste la URL https.
+   */
+  idFrontPhoto?: string;
+  idBackPhoto?: string;
+  selfiePhoto?: string;
+  policeRecordPhoto?: string;
 }
 
 export interface VerificationStepState {

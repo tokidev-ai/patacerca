@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, ImageSourcePropType } from 'react-native';
 import { getInitials } from '@patacerca/core';
 import { avatarColors, AvatarColorName } from '@patacerca/theme';
@@ -19,6 +19,8 @@ export const Avatar: React.FC<AvatarProps> = ({
   imageSource,
 }) => {
   const initials = getInitials(name);
+  // Si la foto remota no carga, se muestran las iniciales en vez de un círculo en blanco.
+  const [failedUri, setFailedUri] = useState<string | null>(null);
 
   const matched = avatarColors.find((c) => c.name === colorName) || avatarColors[0]!;
 
@@ -33,10 +35,18 @@ export const Avatar: React.FC<AvatarProps> = ({
     );
   }
 
-  if (imageUri) {
+  if (imageUri && imageUri !== failedUri) {
     return (
       <Image
         source={{ uri: imageUri }}
+        onError={(event) => {
+          console.warn(
+            '[avatar] no cargó la imagen:',
+            imageUri,
+            event.nativeEvent?.error
+          );
+          setFailedUri(imageUri);
+        }}
         style={[styles.container, { width: size, height: size, borderRadius: size / 2 }]}
       />
     );

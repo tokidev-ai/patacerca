@@ -4,6 +4,7 @@ export const INITIAL_WALKERS: Walker[] = [
   {
     id: 'w1',
     phone: '71110001',
+    email: 'marco@patacerca.test',
     name: 'Marco Rojas',
     zone: 'Queru Queru',
     distanceText: 'a 3 cuadras',

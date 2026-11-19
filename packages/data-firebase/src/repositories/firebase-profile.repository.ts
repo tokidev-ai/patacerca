@@ -7,12 +7,9 @@ import {
   type Walker,
 } from '@patacerca/core';
 import { getFirestoreDb } from '../firebase/app';
-import {
-  documentToOwner,
-  ownerToDocument,
-  walkerToDocument,
-} from '../firebase/mappers';
+import { documentToOwner, ownerToDocument, walkerToDocument } from '../firebase/mappers';
 import { findWalkerByIdOrPhone } from '../firebase/walker-lookup';
+import { ensureRemoteImage } from '../firebase/storage';
 
 export class FirebaseProfileRepository implements IProfileRepository {
   async getOwnerProfile(phone: string): Promise<Owner | null> {
@@ -22,11 +19,28 @@ export class FirebaseProfileRepository implements IProfileRepository {
   }
 
   async saveOwnerProfile(owner: Owner): Promise<Owner> {
-    const payload = ownerToDocument(owner);
+    // Sube a Storage las fotos locales (perfil y mascotas) y guarda solo URLs https.
+    const photoUrl = await ensureRemoteImage(
+      owner.photoUrl,
+      `owners/${owner.phone}/avatar`
+    );
+    const pets = owner.pets
+      ? await Promise.all(
+          owner.pets.map(async (pet) => ({
+            ...pet,
+            photoUrl: await ensureRemoteImage(
+              pet.photoUrl,
+              `owners/${owner.phone}/pets/${pet.id}`
+            ),
+          }))
+        )
+      : undefined;
+    const resolved: Owner = { ...owner, photoUrl, pets };
+    const payload = ownerToDocument(resolved);
     await setDoc(doc(getFirestoreDb(), FS_COLLECTIONS.owners, owner.phone), payload, {
       merge: true,
     });
-    return owner;
+    return resolved;
   }
 
   async addPetToOwner(phone: string, pet: Pet): Promise<Owner> {
@@ -84,7 +98,11 @@ export class FirebaseProfileRepository implements IProfileRepository {
     return findWalkerByIdOrPhone(walkerIdOrPhone);
   }
 
-  async saveWalkerProfile(walker: Walker): Promise<Walker> {
+  async saveWalkerProfile(input: Walker): Promise<Walker> {
+    const walker: Walker = {
+      ...input,
+      photoUrl: await ensureRemoteImage(input.photoUrl, `walkers/${input.id}/avatar`),
+    };
     const payload = walkerToDocument(walker);
     await setDoc(doc(getFirestoreDb(), FS_COLLECTIONS.walkers, walker.id), payload, {
       merge: true,

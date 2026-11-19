@@ -12,6 +12,9 @@ export interface WalkerReview {
 export interface Walker {
   id: string;
   phone: string;
+  email?: string;
+  /** Foto de perfil de frente (https tras subir a Storage; URI local solo en mock). */
+  photoUrl?: string;
   name: string;
   zone: string;
   distanceText: string;

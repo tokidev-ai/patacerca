@@ -53,10 +53,10 @@ El CI en GitHub (`.github/workflows/ci.yml`) ejecuta **`npm run check`** en cada
 
 ## Responsabilidades por app
 
-| App         | Usuario        | Flujos clave                                                                  |
-| ----------- | -------------- | ----------------------------------------------------------------------------- |
-| **owners**  | Dueño de perro | Auth WhatsApp → onboarding perro → buscar paseadores → solicitar paseo → chat |
-| **walkers** | Paseador       | Auth → onboarding → verificación 4 pasos → solicitudes → perfil               |
+| App         | Usuario        | Flujos clave                                                                                                  |
+| ----------- | -------------- | ------------------------------------------------------------------------------------------------------------- |
+| **owners**  | Dueño de perro | Login correo/contraseña (registro: WhatsApp + OTP → onboarding) → buscar paseadores → solicitar paseo → chat  |
+| **walkers** | Paseador       | Login correo/contraseña (registro: WhatsApp + OTP → onboarding) → verificación 4 pasos → solicitudes → perfil |
 
 Cada app es **independiente**: su `app/`, `src/features/`, stores y `app.config.ts`.
 
@@ -68,7 +68,7 @@ Cada app es **independiente**: su `app/`, `src/features/`, stores y `app.config.
 
 ## Features (`src/features/`)
 
-- `auth/screens/` — Welcome, Phone, Code, Onboarding
+- `auth/screens/` — Login, Phone, Code, Onboarding
 - owners: `search`, `walker-detail`, `requests`, `chat`, `profile`
 - walkers: `inbox`, `verification`, `profile`, `chat`
 
@@ -92,7 +92,7 @@ npm run owners   # 8081
 npm run walkers  # 8082
 ```
 
-OTP de prueba: **1234**. Teléfonos Bolivia: 8 dígitos, +591.
+OTP de prueba: **1234**. Teléfonos Bolivia: 8 dígitos, +591. Login demo (mock): `daniela@patacerca.test` (owners) / `marco@patacerca.test` (walkers), contraseña `123456`.
 
 ## Selección vs filtros
 

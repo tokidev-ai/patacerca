@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Avatar,
+  AvatarPicker,
   Button,
   IconButton,
   Chip,
@@ -88,6 +88,26 @@ export const WalkerProfileScreen: React.FC = () => {
     }
   };
 
+  const [photoLoading, setPhotoLoading] = useState(false);
+
+  const handleChangePhoto = async (uri: string) => {
+    if (!walker) return;
+    setPhotoLoading(true);
+    try {
+      const saved = await walkersRepository.updateWalkerProfile(walker.id, {
+        photoUrl: uri,
+      });
+      updateWalker({ photoUrl: saved.photoUrl });
+      showToast('Foto de perfil actualizada');
+    } catch (e) {
+      console.warn('[foto] falló:', e);
+      const detail = __DEV__ && e instanceof Error ? ` (${e.message})` : '';
+      showToast(`No pudimos subir la foto. Intenta de nuevo.${detail}`);
+    } finally {
+      setPhotoLoading(false);
+    }
+  };
+
   const handleSaveProfile = async () => {
     updateWalker({
       bio,
@@ -117,7 +137,7 @@ export const WalkerProfileScreen: React.FC = () => {
   const handleLogout = async () => {
     await authRepository.logout();
     clearSession();
-    router.replace('/(auth)/welcome');
+    router.replace('/(auth)/login');
   };
 
   return (
@@ -136,10 +156,13 @@ export const WalkerProfileScreen: React.FC = () => {
 
         {/* Profile Card */}
         <View style={styles.profileCard}>
-          <Avatar
+          <AvatarPicker
             name={walker?.name || 'Paseador'}
             colorName={walker?.colorName || 'green'}
             size={64}
+            uri={walker?.photoUrl}
+            onChange={handleChangePhoto}
+            loading={photoLoading}
           />
           <View style={styles.profileInfo}>
             <Text style={styles.walkerName}>{walker?.name || 'Paseador'}</Text>

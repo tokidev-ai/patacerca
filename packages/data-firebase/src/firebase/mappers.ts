@@ -18,6 +18,8 @@ export function ownerToDocument(owner: Owner): OwnerDocument {
   const ts = now();
   return omitUndefinedDeep({
     phone: owner.phone,
+    email: owner.email,
+    photoUrl: sanitizeRemotePhotoUrl(owner.photoUrl),
     name: owner.name,
     zone: owner.zone,
     dogName: owner.dogName,
@@ -37,6 +39,8 @@ export function ownerToDocument(owner: Owner): OwnerDocument {
 export function documentToOwner(doc: OwnerDocument): Owner {
   return {
     phone: doc.phone,
+    email: doc.email,
+    photoUrl: doc.photoUrl,
     name: doc.name,
     zone: doc.zone,
     dogName: doc.dogName,
@@ -56,6 +60,7 @@ export function walkerToDocument(walker: Walker): WalkerDocument {
   const ts = now();
   return omitUndefinedDeep({
     ...walker,
+    photoUrl: sanitizeRemotePhotoUrl(walker.photoUrl),
     createdAt: ts,
     updatedAt: ts,
   });
@@ -105,6 +110,10 @@ export function verificationToDocument(
   return omitUndefinedDeep({
     walkerId,
     ...data,
+    idFrontPhoto: sanitizeRemotePhotoUrl(data.idFrontPhoto),
+    idBackPhoto: sanitizeRemotePhotoUrl(data.idBackPhoto),
+    selfiePhoto: sanitizeRemotePhotoUrl(data.selfiePhoto),
+    policeRecordPhoto: sanitizeRemotePhotoUrl(data.policeRecordPhoto),
     createdAt: ts,
     updatedAt: ts,
   });
@@ -122,5 +131,9 @@ export function documentToVerification(doc: VerificationDocument): VerificationD
     ref2Name: doc.ref2Name,
     ref2Phone: doc.ref2Phone,
     interviewSlot: doc.interviewSlot,
+    idFrontPhoto: doc.idFrontPhoto,
+    idBackPhoto: doc.idBackPhoto,
+    selfiePhoto: doc.selfiePhoto,
+    policeRecordPhoto: doc.policeRecordPhoto,
   };
 }

@@ -1,6 +1,6 @@
 /**
- * Firebase Storage (fotos mascota, carnet, etc.) queda para una fase posterior (plan Blaze).
- * Mientras tanto: la UI puede mostrar file:// local; al persistir solo guardamos https.
+ * Las fotos se suben a Firebase Storage desde los repositorios de data-firebase.
+ * La UI puede mostrar file:// local; en Firestore solo se persiste https.
  */
 
 export function sanitizeRemotePhotoUrl(url?: string | null): string | undefined {

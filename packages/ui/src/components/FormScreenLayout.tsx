@@ -20,6 +20,8 @@ export interface FormScreenLayoutProps {
   horizontalPadding?: number;
   scrollContentStyle?: StyleProp<ViewStyle>;
   keyboardVerticalOffset?: number;
+  /** Sin safe area superior: el primer hijo (p. ej. una imagen) llega al borde de la pantalla. */
+  edgeToEdgeTop?: boolean;
 }
 
 /**
@@ -33,10 +35,11 @@ export const FormScreenLayout: React.FC<FormScreenLayoutProps> = ({
   horizontalPadding = 24,
   scrollContentStyle,
   keyboardVerticalOffset = 0,
+  edgeToEdgeTop = false,
 }) => {
   return (
     <SafeAreaView
-      edges={['top', 'left', 'right']}
+      edges={edgeToEdgeTop ? ['left', 'right'] : ['top', 'left', 'right']}
       style={[styles.safeArea, { backgroundColor }]}
     >
       <KeyboardAvoidingView

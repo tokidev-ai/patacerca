@@ -21,11 +21,10 @@ export default function Index() {
           return;
         }
       } catch {
-        // Fallback to welcome
-      } finally {
-        setChecking(false);
-        router.replace('/(auth)/welcome');
+        // Fallback to login
       }
+      setChecking(false);
+      router.replace('/(auth)/login');
     }
 
     checkAuth();

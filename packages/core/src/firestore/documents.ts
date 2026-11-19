@@ -14,6 +14,8 @@ export interface FirestoreTimestamps {
 /** owners/{phone8} */
 export interface OwnerDocument extends FirestoreTimestamps {
   phone: string;
+  email?: string;
+  photoUrl?: string;
   name: string;
   zone: string;
   dogName: string;
@@ -32,6 +34,8 @@ export interface OwnerDocument extends FirestoreTimestamps {
 export interface WalkerDocument extends FirestoreTimestamps {
   id: string;
   phone: string;
+  email?: string;
+  photoUrl?: string;
   name: string;
   zone: string;
   distanceText: string;
@@ -91,14 +95,11 @@ export interface VerificationDocument extends FirestoreTimestamps {
   ref2Name: string;
   ref2Phone: string;
   interviewSlot: string;
-  /**
-   * URIs locales file:// de fotos de verificación — no se suben a Storage aún.
-   * Cuando integres Firebase Storage, guarda paths en idFrontStoragePath, etc.
-   */
-  idFrontLocalUri?: string;
-  idBackLocalUri?: string;
-  selfieLocalUri?: string;
-  policeRecordLocalUri?: string;
+  /** URLs https en Firebase Storage (verifications/{walkerId}/…). */
+  idFrontPhoto?: string;
+  idBackPhoto?: string;
+  selfiePhoto?: string;
+  policeRecordPhoto?: string;
 }
 
 /** otpSessions/{phone8} — lee el código en Firebase Console mientras no hay WhatsApp */
@@ -107,6 +108,14 @@ export interface OtpSessionDocument {
   code: string;
   role: 'owner' | 'walker';
   expiresAt: number;
+  createdAt: number;
+}
+
+/** userAccounts/{uid} — vincula la cuenta de Firebase Auth (correo) con el teléfono del perfil */
+export interface UserAccountDocument {
+  email: string;
+  phone: string;
+  role: 'owner' | 'walker';
   createdAt: number;
 }
 

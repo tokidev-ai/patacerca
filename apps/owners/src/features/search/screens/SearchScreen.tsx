@@ -134,7 +134,12 @@ export const SearchScreen: React.FC = () => {
         onPress={() => router.push(`/walker/${item.id}`)}
         style={styles.card}
       >
-        <Avatar name={item.name} colorName={item.colorName} size={56} />
+        <Avatar
+          name={item.name}
+          colorName={item.colorName}
+          size={56}
+          imageUri={item.photoUrl}
+        />
         <View style={styles.cardInfo}>
           <View style={styles.nameRow}>
             <Text style={styles.walkerName}>{item.name}</Text>
@@ -175,7 +180,9 @@ export const SearchScreen: React.FC = () => {
       <View style={styles.topBar}>
         <View style={styles.titleRow}>
           <View style={styles.titleBlock}>
-            <Text style={styles.greeting}>Hola, {owner?.name?.split(' ')[0] || 'Amigo'}</Text>
+            <Text style={styles.greeting}>
+              Hola, {owner?.name?.split(' ')[0] || 'Amigo'}
+            </Text>
             <Text style={styles.title}>Paseadores cerca de ti</Text>
           </View>
         </View>

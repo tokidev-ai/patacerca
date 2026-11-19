@@ -78,7 +78,9 @@ export const CodeScreen: React.FC = () => {
       </View>
 
       <Text style={styles.title}>Ingresa el código</Text>
-      <Text style={styles.subtitle}>Lo enviamos por WhatsApp al +591 {phone}.</Text>
+      <Text style={styles.subtitle}>
+        Ingresa el código de verificación para +591 {phone}.
+      </Text>
 
       <View style={styles.inputWrapper}>
         <OtpInput
@@ -90,9 +92,7 @@ export const CodeScreen: React.FC = () => {
           error={error}
           autoFocus
         />
-        <Text style={styles.hint}>
-          Revisa Firestore otpSessions o usa el código de EXPO_PUBLIC_OTP_FIXED_CODE
-        </Text>
+        <Text style={styles.hint}>Código de prueba: 1234</Text>
       </View>
     </FormScreenLayout>
   );

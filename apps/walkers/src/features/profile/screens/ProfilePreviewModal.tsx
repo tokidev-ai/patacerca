@@ -34,7 +34,12 @@ export const ProfilePreviewModal: React.FC<ProfilePreviewModalProps> = ({
 
               {/* Simulated Card from Owners App */}
               <View style={styles.card}>
-                <Avatar name={name} colorName={walker?.colorName || 'green'} size={56} />
+                <Avatar
+                  name={name}
+                  colorName={walker?.colorName || 'green'}
+                  size={56}
+                  imageUri={walker?.photoUrl}
+                />
                 <View style={styles.cardInfo}>
                   <View style={styles.nameRow}>
                     <Text style={styles.walkerName}>{name}</Text>

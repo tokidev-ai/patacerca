@@ -56,9 +56,13 @@ No cruzar imports entre `owners` y `walkers`; compartir vía `packages/*`.
 
 ## Flujos
 
-**Owners:** OTP `1234` → onboarding → tabs (search, walks, messages, profile).
+**Login (ambas apps):** pantalla `/(auth)/login` con correo + contraseña; debajo, "Regístrate" abre el registro.
 
-**Walkers:** OTP → onboarding → `/verification` (4 pasos) → tabs (requests, messages, profile).
+**Registro owners:** teléfono → OTP `1234` → onboarding (nombre, correo, contraseña, perro) → tabs (search, walks, messages, profile).
+
+**Registro walkers:** teléfono → OTP → onboarding (nombre, correo, contraseña) → `/verification` (4 pasos) → tabs (requests, messages, profile).
+
+Cuentas demo (mock, contraseña `123456`): owners `daniela@patacerca.test`, walkers `marco@patacerca.test`.
 
 ## Workflow
 

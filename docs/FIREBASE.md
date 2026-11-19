@@ -26,7 +26,11 @@ EXPO_PUBLIC_FIREBASE_APP_ID
 
 Creación: [Firebase Console](https://console.firebase.google.com) → Proyecto → Configuración → Tus apps → Web.
 
-## OTP sin WhatsApp (fase actual)
+## Login con correo y contraseña
+
+Usa **Firebase Authentication** (proveedor *Correo electrónico/contraseña*: actívalo en Firebase Console → Authentication → Sign-in method). Al registrarse se crea el usuario en Auth y `userAccounts/{uid}`; la contraseña nunca se guarda en Firestore. Las reglas deben permitir a cada usuario autenticado escribir/leer solo su propio `userAccounts/{uid}`.
+
+## OTP sin WhatsApp (fase actual, solo registro)
 
 1. Usuario pide código en la app.
 2. Se escribe/actualiza `otpSessions/{phone8}` con `{ code, expiresAt, role, createdAt }`.
@@ -45,7 +49,8 @@ Definición TypeScript: `packages/core/src/firestore/`.
 | `walkers` | `walker.id` | Perfil paseador + `status` |
 | `walkRequests` | `req_{timestamp}` | Solicitudes de paseo |
 | `verifications` | `walkerId` | Pasos KYC (flags + `interviewSlot`) |
-| `otpSessions` | teléfono 8 dígitos | Código login temporal |
+| `otpSessions` | teléfono 8 dígitos | Código de verificación del registro |
+| `userAccounts` | `uid` de Firebase Auth | `{ email, phone, role }` — enlaza el login por correo con el perfil |
 | `chatThreads` | `{ownerPhone}_{walkerId}` | Chat (fase 2; hoy mock en Firebase mode) |
 
 ### Índices compuestos sugeridos
@@ -63,9 +68,17 @@ Archivo de referencia: [`firestore.rules.example`](./firestore.rules.example).
 
 ## Imágenes y Storage
 
-- La UI puede mostrar fotos con URI local (`file://`, `content://`).
-- Al guardar en Firestore, **`photoUrl` solo persiste si es `http(s)`** (`sanitizeRemotePhotoUrl`).
-- **Firebase Storage** (carnet, mascotas, antecedentes) queda para una fase posterior (plan Blaze + reglas). Campos reservados en `VerificationDocument`: `*LocalUri` / futuros `*StoragePath`.
+Las fotos se suben a **Firebase Storage** desde los repositorios de `data-firebase` (las pantallas solo pasan la URI local). En Firestore solo se guarda la URL `https` (`sanitizeRemotePhotoUrl`).
+
+| Foto | Ruta en Storage | Campo |
+|------|-----------------|-------|
+| Perfil dueño | `owners/{phone}/avatar_*.jpg` | `owners/{phone}.photoUrl` |
+| Mascota | `owners/{phone}/pets/{petId}_*.jpg` | `pets[].photoUrl` |
+| Perfil paseador (de frente) | `walkers/{walkerId}/avatar_*.jpg` | `walkers/{id}.photoUrl` |
+| Carnet anverso/reverso, selfie, antecedentes | `verifications/{walkerId}/{idFront\|idBack\|selfie\|policeRecord}_*.jpg` | `verifications/{id}.idFrontPhoto`, `idBackPhoto`, `selfiePhoto`, `policeRecordPhoto` |
+
+- Activa **Storage** en Firebase Console (Build → Storage → Comenzar) y publica reglas basadas en [`storage.rules.example`](./storage.rules.example). Los documentos de `verifications/` son sensibles: restringe su lectura antes de producción.
+- En modo mock las fotos quedan como URI local en AsyncStorage (sin subir nada).
 
 ## Seed de datos de prueba (Firestore)
 
