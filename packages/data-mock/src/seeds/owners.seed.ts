@@ -1,9 +1,13 @@
 import { Owner } from '@patacerca/core';
 
+/** Contraseña de las cuentas demo (solo mock). */
+export const DEMO_PASSWORD = '123456';
+
 /** Dueños de demo (teléfonos alineados con INITIAL_REQUESTS para paseador w1). */
 export const INITIAL_OWNERS: Owner[] = [
   {
     phone: '70000001',
+    email: 'daniela@patacerca.test',
     name: 'Daniela Quiroga',
     zone: 'Queru Queru',
     dogName: 'Toby',
