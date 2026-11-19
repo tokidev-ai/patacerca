@@ -9,6 +9,8 @@
   "scripts": {
     "owners": "npm --workspace=@patacerca/owners run start",
     "walkers": "npm --workspace=@patacerca/walkers run start",
+    "admin": "npm --workspace=@patacerca/admin run start",
+    "admin:create": "npm --workspace=@patacerca/admin run create-admin --",
     "typecheck": "npm run --workspaces --if-present typecheck",
     "format": "prettier --write \"apps/**/*.{ts,tsx}\" \"packages/**/*.{ts,tsx}\" \"*.{md,json,js}\"",
     "format:check": "prettier --check \"apps/**/*.{ts,tsx}\" \"packages/**/*.{ts,tsx}\" \"*.{md,json,js}\"",
