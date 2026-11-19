@@ -14,6 +14,8 @@ export const FS_COLLECTIONS = {
   verifications: 'verifications',
   /** OTP login (WhatsApp pendiente) — doc id: teléfono 8 dígitos */
   otpSessions: 'otpSessions',
+  /** Cuentas de login por correo — doc id: uid de Firebase Auth */
+  userAccounts: 'userAccounts',
   /** Chat in-app (fase 2; hoy coordinación por WhatsApp) */
   chatThreads: 'chatThreads',
 } as const;

@@ -62,11 +62,12 @@ export function getOtpTtlMinutes(): number {
 
 /**
  * Si está definido, siempre se usa este código (pruebas manuales en consola Firebase).
- * Si no, se genera un código aleatorio de 4 dígitos y se guarda en otpSessions.
+ * Si no, se usa `1234` (igual que el modo mock) mientras no haya WhatsApp/SMS real.
+ * TODO: al conectar el envío real, devolver null aquí para generar códigos aleatorios.
  */
 export function getOtpFixedCode(): string | null {
   const code = process.env.EXPO_PUBLIC_OTP_FIXED_CODE?.trim();
-  return code && /^\d{4,6}$/.test(code) ? code : null;
+  return code && /^\d{4,6}$/.test(code) ? code : '1234';
 }
 
 /** Cada app Expo define su rol en .env (owners | walkers). */

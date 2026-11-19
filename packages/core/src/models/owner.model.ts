@@ -10,6 +10,9 @@ export interface Pet {
 
 export interface Owner {
   phone: string;
+  email?: string;
+  /** Foto de perfil (https tras subir a Storage; URI local solo en mock). */
+  photoUrl?: string;
   name: string;
   zone: string;
   dogName: string;
