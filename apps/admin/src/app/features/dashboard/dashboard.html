@@ -1,0 +1,88 @@
+<div class="mx-auto max-w-270 px-4 pt-5 pb-12 md:px-6 md:pt-8 md:pb-16">
+  <header class="mb-6">
+    <h1 class="font-display text-3xl leading-tight font-bold tracking-tight">Dashboard</h1>
+    <p class="text-ink-soft mt-1.5">Resumen de paseadores y solicitudes de verificación.</p>
+  </header>
+
+  @if (walkers.error()) {
+    <div class="bg-danger-soft text-danger rounded-xl px-3.5 py-3">
+      No pudimos cargar los datos: {{ walkers.error() }}
+    </div>
+  } @else if (walkers.loading()) {
+    <p class="text-ink-soft">Cargando…</p>
+  } @else {
+    <div class="mb-5 grid grid-cols-2 gap-3.5 lg:grid-cols-4">
+      <a routerLink="/solicitudes">
+        <app-stat-card
+          label="Solicitudes por revisar"
+          [value]="walkers.inReview().length"
+          [highlight]="true"
+        />
+      </a>
+      <app-stat-card label="Paseadores aprobados" [value]="walkers.approved().length" />
+      <app-stat-card label="Sin verificar" [value]="walkers.pending().length" />
+      <app-stat-card label="Total registrados" [value]="walkers.walkers().length" />
+    </div>
+
+    <div class="grid gap-3.5 lg:grid-cols-[1.5fr_1fr]">
+      <section class="border-line bg-card rounded-2xl border p-5">
+        <div class="mb-2 flex items-center justify-between">
+          <h2 class="font-display text-lg font-bold">Solicitudes pendientes</h2>
+          <a routerLink="/solicitudes" class="text-brand-dark text-sm font-semibold">
+            Ver todas →
+          </a>
+        </div>
+
+        @for (w of recent(); track w.id) {
+          <a
+            [routerLink]="['/solicitudes', w.id]"
+            class="hover:bg-sand flex items-center gap-3 rounded-xl px-2 py-3"
+          >
+            <app-avatar [name]="w.name" [url]="w.photoUrl" />
+            <div class="flex min-w-0 flex-1 flex-col">
+              <strong class="truncate">{{ w.name }}</strong>
+              <span class="text-ink-soft truncate text-sm">
+                {{ w.zone }} · {{ date(w.updatedAt) }}
+              </span>
+            </div>
+            <span class="text-brand-dark text-sm font-semibold">Revisar →</span>
+          </a>
+        } @empty {
+          <p class="text-ink-soft pt-3">No hay solicitudes por revisar.</p>
+        }
+      </section>
+
+      <section class="border-line bg-card rounded-2xl border p-5">
+        <h2 class="font-display text-lg font-bold">Estado de paseadores</h2>
+
+        @if (walkers.walkers().length > 0) {
+          <div
+            class="bg-sand mt-5 mb-4 flex h-3.5 overflow-hidden rounded-full"
+            role="img"
+            aria-label="Distribución por estado"
+          >
+            <span class="bg-brand" [style.width.%]="share().approved"></span>
+            <span class="bg-[#d9993a]" [style.width.%]="share().review"></span>
+            <span class="bg-[#cdbfab]" [style.width.%]="share().pending"></span>
+          </div>
+          <ul class="flex flex-col gap-1.5">
+            <li class="flex items-center gap-2">
+              <i class="bg-brand size-2.5 rounded-full"></i>
+              Aprobados · {{ walkers.approved().length }}
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="size-2.5 rounded-full bg-[#d9993a]"></i>
+              En revisión · {{ walkers.inReview().length }}
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="size-2.5 rounded-full bg-[#cdbfab]"></i>
+              Sin verificar · {{ walkers.pending().length }}
+            </li>
+          </ul>
+        } @else {
+          <p class="text-ink-soft pt-3">Aún no hay paseadores registrados.</p>
+        }
+      </section>
+    </div>
+  }
+</div>

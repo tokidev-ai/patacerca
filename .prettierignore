@@ -6,3 +6,5 @@ android/
 ios/
 package-lock.json
 *.tsbuildinfo
+.angular/
+apps/admin/src/environments/environment.ts

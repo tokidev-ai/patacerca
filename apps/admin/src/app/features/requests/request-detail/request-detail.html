@@ -1,0 +1,155 @@
+<div class="mx-auto max-w-270 px-4 pt-5 pb-12 md:px-6 md:pt-8 md:pb-16">
+  <a routerLink="/solicitudes" class="text-brand-dark text-sm font-semibold"
+    >← Volver a solicitudes</a
+  >
+
+  @if (walker(); as w) {
+    <header class="mt-4 mb-6 flex flex-wrap items-center gap-4">
+      <app-avatar [name]="w.name" [url]="w.photoUrl" [size]="72" />
+      <div class="min-w-0 flex-1">
+        <h1 class="font-display text-3xl leading-tight font-bold tracking-tight">{{ w.name }}</h1>
+        <p class="text-ink-soft">
+          {{ w.zone }} · +591 {{ w.phone }}
+          @if (w.email) {
+            · {{ w.email }}
+          }
+        </p>
+      </div>
+      <app-status-pill [status]="w.status" />
+    </header>
+
+    @if (approved()) {
+      <div class="bg-brand-soft text-brand-dark mb-4 rounded-xl px-3.5 py-3 font-semibold">
+        Paseador aprobado: ya aparece verificado y en las búsquedas de los dueños.
+      </div>
+    }
+    @if (error()) {
+      <div class="bg-danger-soft text-danger mb-4 rounded-xl px-3.5 py-3">{{ error() }}</div>
+    }
+
+    <div class="grid gap-3.5 lg:grid-cols-[1fr_1.2fr]">
+      <div class="flex flex-col gap-3.5">
+        <section class="border-line bg-card rounded-2xl border p-5">
+          <h2 class="font-display mb-3 text-lg font-bold">Perfil</h2>
+          <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
+            <dt class="text-ink-soft">Precio 30 min</dt>
+            <dd class="font-semibold">{{ w.price30 }} Bs</dd>
+            <dt class="text-ink-soft">Precio 60 min</dt>
+            <dd class="font-semibold">{{ w.price60 }} Bs</dd>
+            <dt class="text-ink-soft">Zonas</dt>
+            <dd>{{ w.zones.join(', ') || w.zone }}</dd>
+            <dt class="text-ink-soft">Días</dt>
+            <dd>{{ w.days.join(', ') || '—' }}</dd>
+            <dt class="text-ink-soft">Horarios</dt>
+            <dd>{{ w.timeSlots.join(', ') || '—' }}</dd>
+            <dt class="text-ink-soft">Registrado</dt>
+            <dd>{{ date(w.createdAt) }}</dd>
+          </dl>
+          @if (w.bio) {
+            <p class="bg-sand mt-4 rounded-xl p-3.5 text-[14px]">{{ w.bio }}</p>
+          }
+        </section>
+
+        <section class="border-line bg-card rounded-2xl border p-5">
+          <h2 class="font-display mb-3 text-lg font-bold">Decisión</h2>
+          @switch (w.status) {
+            @case ('in_review') {
+              @if (!confirming()) {
+                <p class="text-ink-soft mb-3">
+                  Revisa los documentos y, si todo está en orden, aprueba al paseador.
+                </p>
+                <button
+                  type="button"
+                  class="bg-brand text-card hover:bg-brand-dark w-full cursor-pointer rounded-xl px-5 py-3 font-semibold transition-colors"
+                  (click)="confirming.set(true)"
+                >
+                  Aprobar paseador
+                </button>
+              } @else {
+                <p class="mb-3 font-semibold">¿Confirmas la aprobación de {{ w.name }}?</p>
+                <div class="flex gap-2">
+                  <button
+                    type="button"
+                    class="bg-brand text-card hover:bg-brand-dark flex-1 cursor-pointer rounded-xl px-5 py-3 font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55"
+                    [disabled]="approving()"
+                    (click)="approve()"
+                  >
+                    {{ approving() ? 'Aprobando…' : 'Sí, aprobar' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="border-line hover:bg-sand cursor-pointer rounded-xl border-[1.5px] px-5 py-3 font-semibold"
+                    [disabled]="approving()"
+                    (click)="confirming.set(false)"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              }
+            }
+            @case ('approved') {
+              <p class="text-brand-dark font-semibold">Este paseador ya está aprobado.</p>
+            }
+            @default {
+              <p class="text-ink-soft">
+                Aún no envió su verificación. Podrás aprobarlo cuando pase a «En revisión».
+              </p>
+            }
+          }
+        </section>
+      </div>
+
+      <div class="flex flex-col gap-3.5">
+        <section class="border-line bg-card rounded-2xl border p-5">
+          <h2 class="font-display mb-3 text-lg font-bold">Verificación</h2>
+          @if (verification() === undefined) {
+            <p class="text-ink-soft">Cargando…</p>
+          } @else if (verification(); as v) {
+            <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
+              <dt class="text-ink-soft">Carnet de identidad</dt>
+              <dd class="font-semibold">{{ v.nationalIdNumber || '—' }}</dd>
+              <dt class="text-ink-soft">Referencia 1</dt>
+              <dd>{{ v.ref1Name || '—' }} · {{ v.ref1Phone || '—' }}</dd>
+              <dt class="text-ink-soft">Referencia 2</dt>
+              <dd>{{ v.ref2Name || '—' }} · {{ v.ref2Phone || '—' }}</dd>
+              <dt class="text-ink-soft">Entrevista</dt>
+              <dd>{{ v.interviewSlot || '—' }}</dd>
+            </dl>
+          } @else {
+            <p class="text-ink-soft">Este paseador todavía no completó la verificación.</p>
+          }
+        </section>
+
+        <section class="border-line bg-card rounded-2xl border p-5">
+          <h2 class="font-display mb-3 text-lg font-bold">Documentos</h2>
+          <div class="grid grid-cols-2 gap-3">
+            @for (p of photos(); track p.label) {
+              <figure class="m-0">
+                @if (p.url) {
+                  <a [href]="p.url" target="_blank" rel="noopener">
+                    <img
+                      class="border-line aspect-4/3 w-full rounded-xl border object-cover"
+                      [src]="p.url"
+                      [alt]="p.label"
+                    />
+                  </a>
+                } @else {
+                  <div
+                    class="border-line bg-sand text-ink-faint grid aspect-4/3 place-items-center rounded-xl border border-dashed text-sm"
+                  >
+                    No subido
+                  </div>
+                }
+                <figcaption class="text-ink-soft mt-1.5 text-[13px]">{{ p.label }}</figcaption>
+              </figure>
+            }
+          </div>
+        </section>
+      </div>
+    </div>
+  } @else if (loadingList()) {
+    <p class="text-ink-soft mt-6">Cargando…</p>
+  } @else {
+    <p class="text-ink-soft mt-6">No encontramos a este paseador.</p>
+  }
+</div>

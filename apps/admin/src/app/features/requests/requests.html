@@ -1,0 +1,88 @@
+<div class="mx-auto max-w-270 px-4 pt-5 pb-12 md:px-6 md:pt-8 md:pb-16">
+  <header class="mb-6">
+    <h1 class="font-display text-3xl leading-tight font-bold tracking-tight">Solicitudes</h1>
+    <p class="text-ink-soft mt-1.5">
+      Paseadores que enviaron su verificación. Ábrelos para revisar y aprobar.
+    </p>
+  </header>
+
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-wrap gap-2" role="tablist">
+      @for (t of tabs(); track t.key) {
+        <button
+          type="button"
+          role="tab"
+          class="cursor-pointer rounded-full border-[1.5px] px-4 py-2 font-semibold"
+          [class]="
+            filter() === t.key
+              ? 'border-brand bg-brand text-card'
+              : 'border-line bg-card text-ink-soft'
+          "
+          [attr.aria-selected]="filter() === t.key"
+          (click)="filter.set(t.key)"
+        >
+          {{ t.label }} <span class="ml-1 opacity-75">{{ t.count }}</span>
+        </button>
+      }
+    </div>
+
+    <input
+      type="search"
+      class="border-line focus:border-brand w-full rounded-xl border-[1.5px] bg-white px-3.5 py-2.5 outline-none sm:w-72"
+      placeholder="Buscar por nombre, teléfono o zona"
+      [ngModel]="query()"
+      (ngModelChange)="query.set($event)"
+    />
+  </div>
+
+  @if (walkers.error()) {
+    <div class="bg-danger-soft text-danger rounded-xl px-3.5 py-3">
+      No pudimos cargar las solicitudes: {{ walkers.error() }}
+    </div>
+  } @else if (walkers.loading()) {
+    <p class="text-ink-soft">Cargando…</p>
+  } @else {
+    <div class="border-line bg-card overflow-x-auto rounded-2xl border px-2 py-1">
+      <table class="w-full min-w-180 border-collapse text-left">
+        <thead>
+          <tr class="text-ink-faint text-[13px]">
+            <th class="px-3 pt-3.5 pb-2.5 font-semibold">Paseador</th>
+            <th class="px-3 pt-3.5 pb-2.5 font-semibold">Zona</th>
+            <th class="px-3 pt-3.5 pb-2.5 font-semibold">Teléfono</th>
+            <th class="px-3 pt-3.5 pb-2.5 font-semibold">Estado</th>
+            <th class="px-3 pt-3.5 pb-2.5 font-semibold">Actualizado</th>
+            <th class="px-3 pt-3.5 pb-2.5"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (w of rows(); track w.id) {
+            <tr class="border-line border-t">
+              <td class="p-3">
+                <a [routerLink]="['/solicitudes', w.id]" class="flex items-center gap-3">
+                  <app-avatar [name]="w.name" [url]="w.photoUrl" />
+                  <span class="flex flex-col">
+                    <strong>{{ w.name }}</strong>
+                    <small class="text-ink-soft">{{ w.email || 'Sin correo' }}</small>
+                  </span>
+                </a>
+              </td>
+              <td class="p-3">{{ w.zone }}</td>
+              <td class="p-3">+591 {{ w.phone }}</td>
+              <td class="p-3"><app-status-pill [status]="w.status" /></td>
+              <td class="text-ink-soft p-3">{{ date(w.updatedAt) }}</td>
+              <td class="p-3">
+                <a [routerLink]="['/solicitudes', w.id]" class="text-brand-dark font-semibold">
+                  Ver →
+                </a>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-ink-soft p-7 text-center">No hay resultados.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

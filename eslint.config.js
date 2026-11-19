@@ -11,6 +11,7 @@ module.exports = [
       '**/ios/**',
       '**/dist/**',
       '**/web-build/**',
+      '**/.angular/**',
     ],
   },
 ];

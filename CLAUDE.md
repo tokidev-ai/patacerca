@@ -15,6 +15,7 @@ Eres un desarrollador experto en **React Native (Expo)**. El **repositorio GitHu
 | -------------------- | -------------------------------------------------- |
 | `apps/owners`        | App dueños — `npm run owners` (8081)               |
 | `apps/walkers`       | App paseadores — `npm run walkers` (8082)          |
+| `apps/admin`         | Panel web Angular (admin) — `npm run admin` (8083) |
 | `packages/ui`        | Design system RN (`Button`, `FormScreenLayout`, …) |
 | `packages/core`      | Tipos, Zod, `APP_STRINGS`, zonas Cochabamba        |
 | `packages/data-mock` | Repositorios mock                                  |
