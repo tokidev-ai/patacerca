@@ -26,11 +26,10 @@ export default function Index() {
           await authRepository.logout();
         }
       } catch {
-        // Fallback
-      } finally {
-        setChecking(false);
-        router.replace('/(auth)/welcome');
+        // Fallback to login
       }
+      setChecking(false);
+      router.replace('/(auth)/login');
     }
 
     checkAuth();

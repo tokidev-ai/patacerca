@@ -83,17 +83,17 @@ export const VerificationStepModal: React.FC<VerificationStepModalProps> = ({
 
   const [ciNum, setCiNum] = useState(initialData?.nationalIdNumber || '');
   const [idFrontUri, setIdFrontUri] = useState<string | null>(
-    initialData?.idFrontUploaded ? 'saved' : null
+    initialData?.idFrontPhoto ?? (initialData?.idFrontUploaded ? 'saved' : null)
   );
   const [idBackUri, setIdBackUri] = useState<string | null>(
-    initialData?.idBackUploaded ? 'saved' : null
+    initialData?.idBackPhoto ?? (initialData?.idBackUploaded ? 'saved' : null)
   );
   const [selfieUri, setSelfieUri] = useState<string | null>(
-    initialData?.selfieUploaded ? 'saved' : null
+    initialData?.selfiePhoto ?? (initialData?.selfieUploaded ? 'saved' : null)
   );
 
   const [antecUri, setAntecUri] = useState<string | null>(
-    initialData?.policeRecordUploaded ? 'saved' : null
+    initialData?.policeRecordPhoto ?? (initialData?.policeRecordUploaded ? 'saved' : null)
   );
 
   const [r1n, setR1n] = useState(initialData?.ref1Name || '');
@@ -183,6 +183,10 @@ export const VerificationStepModal: React.FC<VerificationStepModalProps> = ({
           idFrontUploaded: true,
           idBackUploaded: true,
           selfieUploaded: true,
+          // Solo se envían las fotos nuevas (las ya guardadas quedan como están).
+          ...(idFrontUri && idFrontUri !== 'saved' ? { idFrontPhoto: idFrontUri } : {}),
+          ...(idBackUri && idBackUri !== 'saved' ? { idBackPhoto: idBackUri } : {}),
+          ...(selfieUri && selfieUri !== 'saved' ? { selfiePhoto: selfieUri } : {}),
         });
       } else if (step === 2) {
         if (!antecUri) {
@@ -193,6 +197,7 @@ export const VerificationStepModal: React.FC<VerificationStepModalProps> = ({
         }
         await verificationRepository.saveStep(walkerId, {
           policeRecordUploaded: true,
+          ...(antecUri && antecUri !== 'saved' ? { policeRecordPhoto: antecUri } : {}),
         });
       } else if (step === 3) {
         const clean1 = cleanBolivianPhone(r1p);

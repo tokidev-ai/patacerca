@@ -2,40 +2,73 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
+  AvatarPicker,
   Button,
   Input,
   Field,
   FormScreenLayout,
   SearchableOptionSelect,
 } from '@patacerca/ui';
-import { COCHABAMBA_ZONES, DEFAULT_ZONE, Walker, APP_STRINGS } from '@patacerca/core';
+import {
+  COCHABAMBA_ZONES,
+  DEFAULT_ZONE,
+  MIN_PASSWORD_LENGTH,
+  Walker,
+  APP_STRINGS,
+  isEmailTakenError,
+  isValidEmail,
+  normalizeEmail,
+} from '@patacerca/core';
 import { useWalkerData } from '../../../providers/DataProvider';
 import { useWalkerSessionStore } from '../../../store/session.store';
+
+type FieldErrors = Partial<
+  Record<'photo' | 'name' | 'email' | 'password' | 'confirmPassword', string>
+>;
 
 export const OnboardingScreen: React.FC = () => {
   const router = useRouter();
   const { phone } = useLocalSearchParams<{ phone: string }>();
-  const { profileRepository, walkersRepository } = useWalkerData();
+  const { authRepository, profileRepository, walkersRepository } = useWalkerData();
   const { setSession } = useWalkerSessionStore();
 
   const [name, setName] = useState('');
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [zone, setZone] = useState<string>(DEFAULT_ZONE);
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [errors, setErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
+
+  const clearError = (key: keyof FieldErrors) =>
+    setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
 
   const handleSubmit = async () => {
     const parts = name.trim().split(/\s+/).filter(Boolean);
-    if (parts.length < 2) {
-      setError(APP_STRINGS.errors.missingWalkerFields);
+    const normalizedEmail = normalizeEmail(email);
+    const next: FieldErrors = {};
+    if (!photoUri) next.photo = APP_STRINGS.errors.missingWalkerPhoto;
+    if (parts.length < 2) next.name = APP_STRINGS.errors.missingWalkerFields;
+    if (!isValidEmail(normalizedEmail)) next.email = APP_STRINGS.errors.invalidEmail;
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      next.password = APP_STRINGS.errors.passwordTooShort;
+    } else if (confirmPassword !== password) {
+      next.confirmPassword = APP_STRINGS.errors.passwordMismatch;
+    }
+    if (Object.keys(next).length > 0) {
+      setErrors(next);
       return;
     }
-    setError('');
+    setErrors({});
     setLoading(true);
 
     const userPhone = phone || '71110001';
     const newWalker: Walker = {
       id: `w_${Date.now()}`,
       phone: userPhone,
+      email: normalizedEmail,
+      photoUrl: photoUri ?? undefined,
       name: name.trim(),
       zone,
       distanceText: 'a pocas cuadras',
@@ -56,12 +89,24 @@ export const OnboardingScreen: React.FC = () => {
     };
 
     try {
-      await profileRepository.saveWalkerProfile(newWalker);
-      await walkersRepository
-        .updateWalkerProfile(newWalker.id, newWalker)
-        .catch(() => {});
-      setSession(userPhone, newWalker);
+      await authRepository.registerCredentials({
+        email: normalizedEmail,
+        password,
+        phone: userPhone,
+        role: 'walker',
+      });
+      const saved = await profileRepository.saveWalkerProfile(newWalker);
+      await walkersRepository.updateWalkerProfile(saved.id, saved).catch(() => {});
+      setSession(userPhone, saved);
       router.replace('/verification');
+    } catch (e) {
+      console.warn('[registro] falló:', e);
+      const detail = __DEV__ && e instanceof Error ? ` (${e.message})` : '';
+      setErrors({
+        email: isEmailTakenError(e)
+          ? APP_STRINGS.errors.emailAlreadyRegistered
+          : `${APP_STRINGS.errors.authFailed}${detail}`,
+      });
     } finally {
       setLoading(false);
     }
@@ -76,14 +121,77 @@ export const OnboardingScreen: React.FC = () => {
       <Text style={styles.eyebrow}>Crea tu cuenta</Text>
       <Text style={styles.title}>Empecemos por lo básico</Text>
 
-      <Field label="Nombre completo" error={error}>
+      <View style={styles.photoSection}>
+        <AvatarPicker
+          name={name || 'Tú'}
+          uri={photoUri}
+          loading={loading}
+          onChange={(uri) => {
+            setPhotoUri(uri);
+            clearError('photo');
+          }}
+          label="Foto de perfil"
+          hint="De frente y con buena luz. Es la foto que verán los dueños arriba de tu perfil."
+          error={errors.photo}
+        />
+      </View>
+
+      <Field label="Nombre completo" error={errors.name}>
         <Input
           placeholder="Como aparece en tu carnet"
           value={name}
           onChangeText={(val) => {
             setName(val);
-            if (error) setError('');
+            clearError('name');
           }}
+        />
+      </Field>
+
+      <Field label="Correo" error={errors.email}>
+        <Input
+          placeholder="tu@correo.com"
+          value={email}
+          onChangeText={(val) => {
+            setEmail(val);
+            clearError('email');
+          }}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          autoComplete="email"
+          textContentType="emailAddress"
+        />
+      </Field>
+
+      <Field label="Contraseña" error={errors.password}>
+        <Input
+          placeholder={`Mínimo ${MIN_PASSWORD_LENGTH} caracteres`}
+          value={password}
+          onChangeText={(val) => {
+            setPassword(val);
+            clearError('password');
+          }}
+          secureTextEntry
+          autoCapitalize="none"
+          autoCorrect={false}
+          autoComplete="new-password"
+          textContentType="newPassword"
+        />
+      </Field>
+
+      <Field label="Repite tu contraseña" error={errors.confirmPassword}>
+        <Input
+          placeholder="Repite la contraseña"
+          value={confirmPassword}
+          onChangeText={(val) => {
+            setConfirmPassword(val);
+            clearError('confirmPassword');
+          }}
+          secureTextEntry
+          autoCapitalize="none"
+          autoCorrect={false}
+          autoComplete="new-password"
+          textContentType="newPassword"
         />
       </Field>
 
@@ -123,6 +231,10 @@ const styles = StyleSheet.create({
     lineHeight: 34,
     letterSpacing: -0.9,
     color: '#2A2420',
+    marginBottom: 24,
+  },
+  photoSection: {
+    alignItems: 'center',
     marginBottom: 24,
   },
   fieldSection: {

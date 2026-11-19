@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Button, IconButton, PhoneInput, FormScreenLayout } from '@patacerca/ui';
 import { isValidBolivianPhone, cleanBolivianPhone, APP_STRINGS } from '@patacerca/core';
 import { useWalkerData } from '../../../providers/DataProvider';
-import { useWalkerSessionStore } from '../../../store/session.store';
-import { useToastStore } from '../../../store/toast.store';
 
 export const PhoneScreen: React.FC = () => {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { authRepository, profileRepository } = useWalkerData();
-  const { setSession } = useWalkerSessionStore();
-  const { showToast } = useToastStore();
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,19 +24,10 @@ export const PhoneScreen: React.FC = () => {
     setError('');
     setLoading(true);
     try {
+      // El login ahora es con correo y contraseña; este flujo solo registra.
       const existingWalker = await profileRepository.getWalkerProfile(cleaned);
-
-      // Dev / pre-WhatsApp: si ya está registrado, entrar sin SMS ni OTP.
-      // TODO: quitar bypass y exigir verifyOtp cuando WhatsApp esté conectado.
       if (existingWalker) {
-        await authRepository.saveSession({
-          phone: cleaned,
-          role: 'walker',
-          walkerData: existingWalker,
-        });
-        setSession(cleaned, existingWalker);
-        showToast(APP_STRINGS.toasts.welcomeBack(existingWalker.name));
-        router.replace('/(tabs)/requests');
+        setError(APP_STRINGS.errors.phoneAlreadyRegistered);
         return;
       }
 
@@ -46,6 +36,8 @@ export const PhoneScreen: React.FC = () => {
         pathname: '/(auth)/code',
         params: { phone: cleaned },
       });
+    } catch {
+      setError(APP_STRINGS.errors.authFailed);
     } finally {
       setLoading(false);
     }
@@ -55,49 +47,69 @@ export const PhoneScreen: React.FC = () => {
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.replace('/(auth)/welcome');
+      router.replace('/(auth)/login');
     }
   };
 
   return (
     <FormScreenLayout
+      horizontalPadding={0}
+      edgeToEdgeTop
       footer={
-        <Button
-          title="Continuar"
-          onPress={handleSubmit}
-          loading={loading}
-          size="lg"
-        />
+        <View style={styles.footerPad}>
+          <Button title="Continuar" onPress={handleSubmit} loading={loading} size="lg" />
+        </View>
       }
     >
-      <View style={styles.header}>
+      <StatusBar style="light" />
+      <Image
+        source={require('../../../../assets/paseadores-welcome.jpg')}
+        style={styles.hero}
+        resizeMode="cover"
+      />
+      <View style={[styles.backWrap, { top: insets.top + 12 }]}>
         <IconButton icon="back" onPress={handleBack} />
       </View>
 
-      <Text style={styles.title}>¿Cuál es tu WhatsApp?</Text>
-      <Text style={styles.subtitle}>
-        Si ya eres paseador entras directo; si no, verificamos tu número para registrarte.
-      </Text>
+      <View style={styles.panel}>
+        <Text style={styles.title}>¿Cuál es tu WhatsApp?</Text>
+        <Text style={styles.subtitle}>
+          Verificamos tu número con un código y luego creas tu correo y contraseña.
+        </Text>
 
-      <View style={styles.inputWrapper}>
-        <PhoneInput
-          value={phone}
-          onChangeText={(val) => {
-            setPhone(val);
-            if (error) setError('');
-          }}
-          error={error}
-          autoFocus
-        />
+        <View style={styles.inputWrapper}>
+          <PhoneInput
+            value={phone}
+            onChangeText={(val) => {
+              setPhone(val);
+              if (error) setError('');
+            }}
+            error={error}
+            autoFocus
+          />
+        </View>
       </View>
     </FormScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  header: {
-    paddingTop: 12,
-    marginBottom: 20,
+  hero: {
+    width: '100%',
+    height: 240,
+  },
+  backWrap: {
+    position: 'absolute',
+    left: 24,
+  },
+  panel: {
+    flexGrow: 1,
+    marginTop: -32,
+    paddingHorizontal: 24,
+    paddingTop: 28,
+    backgroundColor: '#F7F2EA',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
   },
   title: {
     fontFamily: 'BricolageGrotesque_700Bold',
@@ -116,5 +128,8 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     width: '100%',
+  },
+  footerPad: {
+    paddingHorizontal: 24,
   },
 });
