@@ -1,9 +1,13 @@
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FirebaseAuth from 'firebase/auth';
+import type { Auth, Persistence } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 import { getFirebasePublicConfig, isFirebaseConfigured } from '@patacerca/core';
 
 let appInstance: FirebaseApp | null = null;
 let dbInstance: Firestore | null = null;
+let authInstance: Auth | null = null;
 
 export function assertFirebaseConfigured(): FirebaseApp {
   if (!isFirebaseConfigured()) {
@@ -28,4 +32,28 @@ export function getFirestoreDb(): Firestore {
   if (dbInstance) return dbInstance;
   dbInstance = getFirestore(getFirebaseApp());
   return dbInstance;
+}
+
+/**
+ * Firebase Auth con la sesión persistida en AsyncStorage: así el token sigue disponible
+ * (p. ej. para subir fotos a Storage) tras cerrar y abrir la app.
+ */
+export function getFirebaseAuth(): Auth {
+  if (authInstance) return authInstance;
+  const app = getFirebaseApp();
+  // getReactNativePersistence existe en el bundle de React Native pero no en los tipos web.
+  const getRNPersistence = (
+    FirebaseAuth as unknown as {
+      getReactNativePersistence?: (storage: typeof AsyncStorage) => Persistence;
+    }
+  ).getReactNativePersistence;
+  try {
+    authInstance = getRNPersistence
+      ? FirebaseAuth.initializeAuth(app, { persistence: getRNPersistence(AsyncStorage) })
+      : FirebaseAuth.getAuth(app);
+  } catch {
+    // Ya inicializado (fast refresh)
+    authInstance = FirebaseAuth.getAuth(app);
+  }
+  return authInstance;
 }

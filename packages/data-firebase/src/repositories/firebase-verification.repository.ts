@@ -10,8 +10,16 @@ import {
   isStep4Complete,
 } from '@patacerca/core';
 import { getFirestoreDb } from '../firebase/app';
+import { ensureRemoteImage } from '../firebase/storage';
 import { documentToVerification, verificationToDocument } from '../firebase/mappers';
 import { FirebaseWalkersRepository } from './firebase-walkers.repository';
+
+const PHOTO_FIELDS = [
+  ['idFrontPhoto', 'idFront'],
+  ['idBackPhoto', 'idBack'],
+  ['selfiePhoto', 'selfie'],
+  ['policeRecordPhoto', 'policeRecord'],
+] as const;
 
 const emptyVerification = (): VerificationData => ({
   nationalIdNumber: '',
@@ -52,6 +60,16 @@ export class FirebaseVerificationRepository implements IVerificationRepository {
       : emptyVerification();
 
     const updated: VerificationData = { ...existing, ...data };
+    // Fotos locales -> Storage (verifications/{walkerId}/…); se guarda la URL https.
+    for (const [field, name] of PHOTO_FIELDS) {
+      const uri = data[field];
+      if (uri) {
+        updated[field] = await ensureRemoteImage(
+          uri,
+          `verifications/${walkerId}/${name}`
+        );
+      }
+    }
     const payload = verificationToDocument(walkerId, updated);
     if (existingSnap.exists()) {
       const prev = existingSnap.data() as { createdAt?: number };

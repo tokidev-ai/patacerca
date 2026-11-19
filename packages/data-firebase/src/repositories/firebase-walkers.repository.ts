@@ -7,6 +7,7 @@ import {
 } from '@patacerca/core';
 import { getFirestoreDb } from '../firebase/app';
 import { documentToWalker, walkerToDocument } from '../firebase/mappers';
+import { ensureRemoteImage } from '../firebase/storage';
 
 export class FirebaseWalkersRepository implements IWalkersRepository {
   private applyFilters(list: Walker[], filters?: WalkerFilters): Walker[] {
@@ -63,6 +64,7 @@ export class FirebaseWalkersRepository implements IWalkersRepository {
       throw new Error(`Walker with id ${id} not found`);
     }
     const updated: Walker = { ...existing, ...updates, id: existing.id };
+    updated.photoUrl = await ensureRemoteImage(updated.photoUrl, `walkers/${id}/avatar`);
     const payload = walkerToDocument(updated);
     await setDoc(doc(getFirestoreDb(), FS_COLLECTIONS.walkers, id), payload, {
       merge: true,
