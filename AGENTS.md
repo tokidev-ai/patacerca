@@ -13,6 +13,7 @@ patacerca/                    # ← repo GitHub (npm workspaces)
 ├── README.md                 # Arquitectura y features
 ├── apps/owners/              # App dueños (com.patacerca.owners)
 ├── apps/walkers/             # App paseadores (com.patacerca.walkers)
+├── apps/admin/               # Panel web Angular + Tailwind (aprueba paseadores) — ver su README
 └── packages/
     ├── ui/                   # Componentes compartidos
     ├── core/                 # Modelos, Zod, strings, reglas
