@@ -10,6 +10,7 @@
     "@patacerca/core": "*",
     "@patacerca/data-mock": "*",
     "@react-native-async-storage/async-storage": "^2.1.2",
+    "@react-native-firebase/auth": "*",
     "expo-file-system": "*",
     "firebase": "^11.6.0"
   },

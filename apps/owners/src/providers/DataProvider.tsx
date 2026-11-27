@@ -5,6 +5,7 @@ import {
   IRequestsRepository,
   IChatRepository,
   IProfileRepository,
+  IZonesRepository,
 } from '@patacerca/core';
 import { createOwnerRepositories } from '@patacerca/data-firebase';
 
@@ -14,6 +15,7 @@ interface DataContextValue {
   requestsRepository: IRequestsRepository;
   chatRepository: IChatRepository;
   profileRepository: IProfileRepository;
+  zonesRepository: IZonesRepository;
 }
 
 const DataContext = createContext<DataContextValue | null>(null);

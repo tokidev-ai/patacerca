@@ -12,7 +12,9 @@ export type AppIconName =
   | 'chevron-down'
   | 'search'
   | 'x'
-  | 'check';
+  | 'check'
+  | 'alert-triangle'
+  | 'log-out';
 
 export interface AppIconProps {
   name: AppIconName;

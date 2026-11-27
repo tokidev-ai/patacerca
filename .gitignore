@@ -29,3 +29,7 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 
+
+# Firebase nativo (Phone Auth / SMS): se descargan de Firebase Console
+google-services.json
+GoogleService-Info.plist

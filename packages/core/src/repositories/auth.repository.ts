@@ -1,3 +1,4 @@
+import { APP_STRINGS } from '../constants/strings.constant';
 import { Owner } from '../models/owner.model';
 import { Walker } from '../models/walker.model';
 
@@ -15,7 +16,17 @@ export interface VerifyOtpResult {
   user?: SessionUser;
   /** OTP correcto pero aún no hay perfil (ir a onboarding). */
   otpValid?: boolean;
+  /** Motivo cuando el código no sirve (para mostrar el mensaje correcto). */
+  error?: 'invalid' | 'expired' | 'too-many-requests';
 }
+
+/** Mensajes de `Error` que lanza `sendOtp` (SMS real). */
+export const OTP_ERRORS = {
+  tooManyRequests: 'OTP_TOO_MANY_REQUESTS',
+  invalidPhone: 'OTP_INVALID_PHONE',
+  quotaExceeded: 'OTP_QUOTA_EXCEEDED',
+  sendFailed: 'OTP_SEND_FAILED',
+} as const;
 
 export interface RegisterCredentialsInput {
   /** Ya normalizado con `normalizeEmail`. */
@@ -43,4 +54,22 @@ export interface IAuthRepository {
   getCurrentSession(): Promise<SessionUser | null>;
   saveSession(user: SessionUser): Promise<void>;
   logout(): Promise<void>;
+}
+
+/** Mensaje para el usuario según el error de `sendOtp`. */
+export function otpSendErrorMessage(error: unknown): string {
+  const msg = error instanceof Error ? error.message : '';
+  if (msg === OTP_ERRORS.tooManyRequests || msg === OTP_ERRORS.quotaExceeded) {
+    return APP_STRINGS.errors.otpTooManyRequests;
+  }
+  if (msg === OTP_ERRORS.invalidPhone) return APP_STRINGS.errors.invalidBolivianPhone;
+  if (msg === OTP_ERRORS.sendFailed) return APP_STRINGS.errors.otpSendFailed;
+  return APP_STRINGS.errors.authFailed;
+}
+
+/** Mensaje para el usuario cuando `verifyOtp` no acepta el código. */
+export function otpVerifyErrorMessage(result: VerifyOtpResult): string {
+  if (result.error === 'expired') return APP_STRINGS.errors.otpExpired;
+  if (result.error === 'too-many-requests') return APP_STRINGS.errors.otpTooManyRequests;
+  return APP_STRINGS.errors.invalidOtp;
 }

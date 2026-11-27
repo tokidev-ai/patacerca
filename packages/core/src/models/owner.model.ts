@@ -18,5 +18,7 @@ export interface Owner {
   dogName: string;
   dogSize: PetSize;
   pets?: Pet[];
+  /** Suspendido desde el panel admin: no puede entrar a la app. */
+  blocked?: boolean;
   createdAt: number;
 }

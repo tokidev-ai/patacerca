@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 
-export type ButtonVariant = 'primary' | 'outline' | 'danger-soft' | 'disabled';
+export type ButtonVariant = 'primary' | 'outline' | 'danger' | 'danger-soft' | 'disabled';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export interface ButtonProps extends TouchableOpacityProps {
@@ -32,6 +32,8 @@ export const Button: React.FC<ButtonProps> = ({
     switch (variant) {
       case 'outline':
         return styles.outlineContainer;
+      case 'danger':
+        return isDisabled ? styles.disabledContainer : styles.dangerContainer;
       case 'danger-soft':
         return styles.dangerSoftContainer;
       case 'disabled':
@@ -46,6 +48,8 @@ export const Button: React.FC<ButtonProps> = ({
     switch (variant) {
       case 'outline':
         return styles.outlineText;
+      case 'danger':
+        return isDisabled ? styles.disabledText : styles.primaryText;
       case 'danger-soft':
         return styles.dangerSoftText;
       case 'disabled':
@@ -77,7 +81,7 @@ export const Button: React.FC<ButtonProps> = ({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'primary' ? '#FFFFFF' : '#3E8E5E'}
+          color={variant === 'primary' || variant === 'danger' ? '#FFFFFF' : '#3E8E5E'}
           size="small"
         />
       ) : (
@@ -117,10 +121,13 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#2A2420',
   },
+  dangerContainer: {
+    backgroundColor: '#B4472B',
+  },
   dangerSoftContainer: {
-    backgroundColor: 'transparent',
+    backgroundColor: '#FBEAE4',
     borderWidth: 1.5,
-    borderColor: '#E6DCCD',
+    borderColor: '#F0C9BC',
   },
   disabledContainer: {
     backgroundColor: '#E6DCCD',

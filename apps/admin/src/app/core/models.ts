@@ -20,6 +20,8 @@ export interface Walker {
   days: string[];
   timeSlots: string[];
   status: WalkerStatus;
+  /** Suspendido por el admin: no entra a la app ni aparece en búsquedas. */
+  blocked: boolean;
   rating: number;
   reviewsCount: number;
   createdAt?: number;
@@ -37,4 +39,28 @@ export interface Verification {
   idBackPhoto?: string;
   selfiePhoto?: string;
   policeRecordPhoto?: string;
+}
+
+/** Dueño de perro (colección `owners`, doc id = teléfono). */
+export interface Owner {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  photoUrl?: string;
+  zone: string;
+  petsCount: number;
+  blocked: boolean;
+  createdAt?: number;
+  updatedAt?: number;
+}
+
+/** Zona/barrio (colección `zones`). Espeja `ZoneDocument` de @patacerca/core. */
+export interface Zone {
+  id: string;
+  name: string;
+  active: boolean;
+  order: number;
+  createdAt?: number;
+  updatedAt?: number;
 }

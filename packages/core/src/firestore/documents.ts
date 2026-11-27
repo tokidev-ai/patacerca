@@ -28,6 +28,8 @@ export interface OwnerDocument extends FirestoreTimestamps {
     /** Solo URLs https; file:// local no se sube aún (Storage pendiente) */
     photoUrl?: string;
   }[];
+  /** Solo lo escribe el panel admin. */
+  blocked?: boolean;
 }
 
 /** walkers/{walkerId} */
@@ -57,6 +59,8 @@ export interface WalkerDocument extends FirestoreTimestamps {
     createdAt: string;
   }[];
   status: WalkerStatus;
+  /** Solo lo escribe el panel admin. */
+  blocked?: boolean;
   zones: string[];
   days: string[];
   timeSlots: string[];
@@ -68,6 +72,7 @@ export interface WalkRequestDocument extends FirestoreTimestamps {
   ownerPhone: string;
   ownerName: string;
   ownerZone: string;
+  petId?: string;
   dogName: string;
   dogSize: PetSize;
   walkerId: string;
@@ -136,4 +141,11 @@ export interface ChatMessageDocument {
   sender: 'owner' | 'walker';
   text: string;
   timestamp: number;
+}
+
+/** zones/{zoneId} — gestionado desde el panel admin. */
+export interface ZoneDocument extends FirestoreTimestamps {
+  name: string;
+  active: boolean;
+  order: number;
 }

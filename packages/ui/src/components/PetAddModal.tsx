@@ -8,9 +8,8 @@ import {
   TouchableOpacity,
   Image,
   Alert,
-  KeyboardAvoidingView,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import type { Pet, PetSize } from '@patacerca/core';
 import { Input } from './Input';
@@ -18,8 +17,7 @@ import { Chip } from './Chip';
 import { Button } from './Button';
 import { IconButton } from './IconButton';
 import { AppIcon } from './AppIcon';
-import { keyboardAvoidingBehavior } from '../keyboard';
-import { KeyboardAwareScrollView } from '../keyboard-aware-scroll';
+import { KeyboardAwareScrollView, useKeyboardHeight } from '../keyboard-aware-scroll';
 
 export interface PetAddModalProps {
   visible: boolean;
@@ -53,6 +51,9 @@ const PetAddModalForm: React.FC<PetAddModalFormProps> = ({
   onUpdatePet,
 }) => {
   const isEdit = mode === 'edit' && initialPet;
+  const insets = useSafeAreaInsets();
+  const keyboardHeight = useKeyboardHeight();
+  const keyboardOpen = keyboardHeight > 0;
 
   const [name, setName] = useState(() => (isEdit && initialPet ? initialPet.name : ''));
   const [size, setSize] = useState<PetSize>(() =>
@@ -139,8 +140,11 @@ const PetAddModalForm: React.FC<PetAddModalFormProps> = ({
   };
 
   return (
-    <KeyboardAvoidingView behavior={keyboardAvoidingBehavior} style={styles.keyboardWrap}>
-      <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={styles.content}>
+    <View style={[styles.sheetArea, { paddingTop: insets.top + 24 }]}>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.backdrop} />
+      </TouchableWithoutFeedback>
+      <View style={styles.content}>
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.eyebrow}>
@@ -215,15 +219,22 @@ const PetAddModalForm: React.FC<PetAddModalFormProps> = ({
           />
         </KeyboardAwareScrollView>
 
-        <View style={styles.footer}>
+        <View
+          style={[
+            styles.footer,
+            { paddingBottom: keyboardOpen ? 12 : Math.max(insets.bottom, 12) + 8 },
+          ]}
+        >
           <Button
             title={isEdit ? 'Guardar cambios' : 'Guardar mascota'}
             onPress={handleSubmit}
             size="lg"
           />
         </View>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+      </View>
+      {/* Espacio del teclado: el sheet sube completo y el botón queda visible. */}
+      <View style={{ height: keyboardHeight }} />
+    </View>
   );
 };
 
@@ -242,25 +253,23 @@ export const PetAddModal: React.FC<PetAddModalProps> = ({
       visible={visible}
       transparent
       animationType="slide"
+      statusBarTranslucent
+      navigationBarTranslucent
       onRequestClose={onClose}
       onShow={() => setFormKey((k) => k + 1)}
     >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay}>
-          <TouchableWithoutFeedback>
-            {visible ? (
-              <PetAddModalForm
-                key={`${mode}-${initialPet?.id ?? 'new'}-${formKey}`}
-                mode={mode}
-                initialPet={initialPet}
-                onClose={onClose}
-                onAddPet={onAddPet}
-                onUpdatePet={onUpdatePet}
-              />
-            ) : null}
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
+      <View style={styles.overlay}>
+        {visible ? (
+          <PetAddModalForm
+            key={`${mode}-${initialPet?.id ?? 'new'}-${formKey}`}
+            mode={mode}
+            initialPet={initialPet}
+            onClose={onClose}
+            onAddPet={onAddPet}
+            onUpdatePet={onUpdatePet}
+          />
+        ) : null}
+      </View>
     </Modal>
   );
 };
@@ -271,11 +280,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(42, 36, 32, 0.45)',
     justifyContent: 'flex-end',
   },
-  keyboardWrap: {
+  sheetArea: {
+    flex: 1,
     width: '100%',
-    maxHeight: '92%',
+  },
+  backdrop: {
+    flex: 1,
   },
   content: {
+    flexShrink: 1,
     backgroundColor: '#FFFCF7',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
@@ -360,6 +373,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingTop: 12,
-    paddingBottom: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F0E8DC',
   },
 });

@@ -96,3 +96,14 @@ npm run owners
 # Iniciar la App de Paseadores (puerto 8082) en otra terminal
 npm run walkers
 ```
+o
+
+```bash
+# Dueños
+cd apps/owners
+npx expo run:android
+
+# Paseadores (en otra terminal)
+cd apps/walkers
+npx expo run:android --port 8082
+```

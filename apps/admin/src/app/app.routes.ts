@@ -26,6 +26,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/requests/request-detail/request-detail').then((m) => m.RequestDetail),
       },
+      {
+        path: 'usuarios',
+        loadComponent: () => import('./features/users/users').then((m) => m.Users),
+      },
+      {
+        path: 'zonas',
+        loadComponent: () => import('./features/zones/zones').then((m) => m.Zones),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

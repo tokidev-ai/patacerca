@@ -1,0 +1,127 @@
+<div class="mx-auto max-w-270 px-4 pt-5 pb-12 md:px-6 md:pt-8 md:pb-16">
+  <header class="mb-6">
+    <h1 class="font-display text-3xl leading-tight font-bold tracking-tight">Zonas</h1>
+    <p class="text-ink-soft mt-1.5">
+      Barrios que dueños y paseadores pueden elegir en las apps. Desactiva una zona para ocultarla
+      sin perder los perfiles que ya la usan.
+    </p>
+  </header>
+
+  <form
+    class="border-line bg-card mb-4 flex flex-col gap-2 rounded-2xl border p-4 sm:flex-row sm:items-start"
+    (ngSubmit)="add()"
+  >
+    <div class="flex-1">
+      <input
+        name="zoneName"
+        class="border-line focus:border-brand w-full rounded-xl border-[1.5px] bg-white px-3.5 py-2.5 outline-none"
+        placeholder="Nueva zona, ej. Villa Busch"
+        maxlength="40"
+        [ngModel]="newName()"
+        (ngModelChange)="newName.set($event); addError.set('')"
+      />
+      @if (addError()) {
+        <p class="text-danger mt-1.5 text-sm">{{ addError() }}</p>
+      }
+    </div>
+    <button
+      type="submit"
+      class="bg-brand text-card inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl px-5 py-2.5 font-semibold disabled:opacity-60"
+      [disabled]="!newName().trim() || adding()"
+    >
+      @if (adding()) {
+        <span
+          class="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+        ></span>
+      }
+      Agregar zona
+    </button>
+  </form>
+
+  @if (actionError()) {
+    <div class="bg-danger-soft text-danger mb-4 rounded-xl px-3.5 py-3">{{ actionError() }}</div>
+  }
+
+  @if (zonesService.error()) {
+    <div class="bg-danger-soft text-danger rounded-xl px-3.5 py-3">
+      No pudimos cargar las zonas: {{ zonesService.error() }}
+    </div>
+  } @else if (zonesService.loading()) {
+    <p class="text-ink-soft">Cargando…</p>
+  } @else if (zonesService.zones().length === 0) {
+    <div class="border-line bg-card rounded-2xl border p-8 text-center">
+      <p class="font-display text-lg font-bold">Todavía no hay zonas en la base de datos</p>
+      <p class="text-ink-soft mt-1">
+        Mientras tanto, las apps usan la lista por defecto de Cochabamba (13 zonas).
+      </p>
+      <button
+        type="button"
+        class="bg-brand text-card mt-4 inline-flex cursor-pointer items-center gap-2 rounded-xl px-5 py-2.5 font-semibold disabled:opacity-60"
+        [disabled]="seeding()"
+        (click)="seed()"
+      >
+        @if (seeding()) {
+          <span
+            class="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+          ></span>
+        }
+        Cargar zonas por defecto
+      </button>
+    </div>
+  } @else {
+    <p class="text-ink-soft mb-2 text-sm">
+      {{ zonesService.activeCount() }} activas de {{ zonesService.zones().length }}
+    </p>
+    <ul class="border-line bg-card divide-line divide-y rounded-2xl border">
+      @for (z of zonesService.zones(); track z.id) {
+        <li class="flex flex-wrap items-center gap-3 px-4 py-3">
+          <div class="min-w-0 flex-1">
+            <p class="font-semibold" [class.text-ink-faint]="!z.active">{{ z.name }}</p>
+            <p class="text-ink-faint text-[13px]">
+              {{ walkersIn(z) }} {{ walkersIn(z) === 1 ? 'paseador' : 'paseadores' }}
+              @if (!z.active) {
+                · <span class="text-amber font-semibold">Oculta en las apps</span>
+              }
+            </p>
+          </div>
+
+          <button
+            type="button"
+            role="switch"
+            class="relative h-7 w-12 shrink-0 cursor-pointer rounded-full transition-colors disabled:opacity-50"
+            [class]="z.active ? 'bg-brand' : 'bg-line'"
+            [attr.aria-checked]="z.active"
+            [attr.aria-label]="(z.active ? 'Desactivar ' : 'Activar ') + z.name"
+            [disabled]="busyId() === z.id"
+            (click)="toggle(z)"
+          >
+            <span
+              class="absolute top-1 size-5 rounded-full bg-white shadow transition-all"
+              [class]="z.active ? 'left-6' : 'left-1'"
+            ></span>
+          </button>
+
+          <button
+            type="button"
+            class="text-danger hover:bg-danger-soft cursor-pointer rounded-lg px-3 py-1.5 text-sm font-semibold"
+            (click)="toDelete.set(z)"
+          >
+            Eliminar
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</div>
+
+@if (toDelete(); as z) {
+  <app-confirm-dialog
+    [title]="'Eliminar ' + z.name"
+    [message]="deleteMessage(z)"
+    confirmLabel="Eliminar"
+    tone="danger"
+    [busy]="busyId() === z.id"
+    (confirmed)="confirmDelete()"
+    (cancelled)="toDelete.set(null)"
+  />
+}

@@ -3,9 +3,12 @@ import {
   CreateWalkRequestInput,
   WalkRequest,
   WalkRequestStatus,
+  applyReviewToWalker,
+  buildWalkerReview,
 } from '@patacerca/core';
 import { mockStorage } from '../storage/mock-storage';
 import { INITIAL_REQUESTS } from '../seeds/requests.seed';
+import { MockWalkersRepository } from './mock-walkers.repository';
 
 const REQUESTS_STORAGE_KEY = '@patacerca:requests';
 
@@ -80,8 +83,12 @@ export class MockRequestsRepository implements IRequestsRepository {
     if (index === -1) {
       throw new Error(`Request ${requestId} not found`);
     }
+    const existing = list[index]!;
+    if (existing.status !== 'completed' || existing.rating != null) {
+      throw new Error('Este paseo ya fue calificado o aún no está completado');
+    }
     const updated: WalkRequest = {
-      ...list[index]!,
+      ...existing,
       status: 'confirmed',
       rating,
       ratingComment: comment,
@@ -89,6 +96,20 @@ export class MockRequestsRepository implements IRequestsRepository {
     };
     list[index] = updated;
     await mockStorage.setItem(REQUESTS_STORAGE_KEY, list);
+
+    const walkersRepo = new MockWalkersRepository();
+    const walker = await walkersRepo.getWalkerById(existing.walkerId);
+    if (walker) {
+      const next = applyReviewToWalker(
+        walker,
+        buildWalkerReview(existing, rating, comment)
+      );
+      await walkersRepo.updateWalkerProfile(walker.id, {
+        reviews: next.reviews,
+        reviewsCount: next.reviewsCount,
+        rating: next.rating,
+      });
+    }
     return updated;
   }
 }

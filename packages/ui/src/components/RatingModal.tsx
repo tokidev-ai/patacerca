@@ -15,26 +15,42 @@ export interface RatingModalProps {
   walkerName: string;
   onClose: () => void;
   onSubmit: (rating: number, comment?: string) => void;
+  /** Mientras se guarda: bloquea estrellas, comentario y cierre. */
+  loading?: boolean;
 }
+
+const RATING_LABELS = ['', 'Malo', 'Regular', 'Bueno', 'Muy bueno', 'Excelente'];
 
 export const RatingModal: React.FC<RatingModalProps> = ({
   visible,
   walkerName,
   onClose,
   onSubmit,
+  loading = false,
 }) => {
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
 
   const handleSubmit = () => {
+    if (rating === 0 || loading) return;
     onSubmit(rating, comment.trim() || undefined);
-    setRating(5);
+  };
+
+  const handleClose = () => {
+    if (loading) return;
+    setRating(0);
     setComment('');
+    onClose();
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <TouchableWithoutFeedback onPress={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={handleClose}
+    >
+      <TouchableWithoutFeedback onPress={handleClose}>
         <View style={styles.overlay}>
           <TouchableWithoutFeedback>
             <View style={styles.content}>
@@ -44,12 +60,13 @@ export const RatingModal: React.FC<RatingModalProps> = ({
                 Tu calificación ayuda a que otros dueños encuentren al mejor paseador.
               </Text>
 
-              <View style={styles.starsRow}>
+              <View style={[styles.starsRow, loading && styles.disabled]}>
                 {[1, 2, 3, 4, 5].map((star) => (
                   <TouchableOpacity
                     key={star}
                     activeOpacity={0.7}
                     onPress={() => setRating(star)}
+                    disabled={loading}
                     style={styles.starButton}
                   >
                     <Text
@@ -64,6 +81,12 @@ export const RatingModal: React.FC<RatingModalProps> = ({
                 ))}
               </View>
 
+              <Text style={[styles.ratingLabel, rating === 0 && styles.ratingHint]}>
+                {rating === 0
+                  ? 'Toca una estrella para calificar'
+                  : RATING_LABELS[rating]}
+              </Text>
+
               <TextInput
                 value={comment}
                 onChangeText={setComment}
@@ -71,11 +94,21 @@ export const RatingModal: React.FC<RatingModalProps> = ({
                 placeholderTextColor="#8A7D70"
                 multiline
                 numberOfLines={3}
-                style={styles.commentInput}
+                editable={!loading}
+                style={[styles.commentInput, loading && styles.disabled]}
               />
 
               <View style={styles.buttonRow}>
-                <Button title="Confirmar calificación" onPress={handleSubmit} size="md" />
+                <Button
+                  title="Confirmar calificación"
+                  onPress={handleSubmit}
+                  size="md"
+                  loading={loading}
+                  disabled={rating === 0}
+                />
+                {loading && (
+                  <Text style={styles.savingText}>Registrando tu calificación…</Text>
+                )}
               </View>
             </View>
           </TouchableWithoutFeedback>
@@ -118,6 +151,28 @@ const styles = StyleSheet.create({
     color: '#6B6058',
     lineHeight: 20,
     marginBottom: 16,
+  },
+  ratingLabel: {
+    fontFamily: 'Figtree_600SemiBold',
+    fontSize: 14,
+    color: '#2F6E48',
+    textAlign: 'center',
+    marginTop: -8,
+    marginBottom: 14,
+  },
+  ratingHint: {
+    fontFamily: 'Figtree_400Regular',
+    color: '#8A7D70',
+  },
+  disabled: {
+    opacity: 0.6,
+  },
+  savingText: {
+    fontFamily: 'Figtree_500Medium',
+    fontSize: 13,
+    color: '#6B6058',
+    textAlign: 'center',
+    marginTop: 10,
   },
   starsRow: {
     flexDirection: 'row',

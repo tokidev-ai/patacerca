@@ -11,7 +11,6 @@ import {
   SearchableOptionSelect,
 } from '@patacerca/ui';
 import {
-  COCHABAMBA_ZONES,
   DEFAULT_ZONE,
   MIN_PASSWORD_LENGTH,
   PetSize,
@@ -24,6 +23,7 @@ import {
 import { useData } from '../../../providers/DataProvider';
 import { useSessionStore } from '../../../store/session.store';
 import { useToastStore } from '../../../store/toast.store';
+import { useZones } from '../../../hooks/useZones';
 
 type FieldErrors = Partial<
   Record<'name' | 'dogName' | 'email' | 'password' | 'confirmPassword', string>
@@ -31,6 +31,7 @@ type FieldErrors = Partial<
 
 export const OnboardingScreen: React.FC = () => {
   const router = useRouter();
+  const zoneOptions = useZones();
   const { phone } = useLocalSearchParams<{ phone: string }>();
   const { authRepository, profileRepository } = useData();
   const { setSession } = useSessionStore();
@@ -194,7 +195,7 @@ export const OnboardingScreen: React.FC = () => {
         <Text style={styles.fieldHint}>Tu zona en Cochabamba</Text>
         <SearchableOptionSelect
           label="Barrio"
-          options={COCHABAMBA_ZONES}
+          options={zoneOptions}
           value={zone}
           onChange={setZone}
           searchPlaceholder="Buscar barrio…"

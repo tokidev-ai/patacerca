@@ -27,6 +27,7 @@ function toWalker(id: string, data: DocumentData): Walker {
     days: data['days'] ?? [],
     timeSlots: data['timeSlots'] ?? [],
     status: (data['status'] as WalkerStatus) ?? 'pending',
+    blocked: data['blocked'] === true,
     rating: data['rating'] ?? 0,
     reviewsCount: data['reviewsCount'] ?? 0,
     createdAt: data['createdAt'],

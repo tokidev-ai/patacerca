@@ -4,3 +4,4 @@ export * from './requests.repository';
 export * from './chat.repository';
 export * from './verification.repository';
 export * from './profile.repository';
+export * from './zones.repository';

@@ -1,4 +1,12 @@
-import { collection, doc, getDoc, getDocs, limit, query, where } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  limit,
+  query,
+  where,
+} from 'firebase/firestore';
 import { FS_COLLECTIONS, type Walker, type WalkerDocument } from '@patacerca/core';
 import { getFirestoreDb } from './app';
 import { documentToWalker } from './mappers';

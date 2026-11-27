@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -6,11 +6,12 @@ import {
   FlatList,
   TouchableOpacity,
   Linking,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { StatusPill, EmptyState, RatingModal } from '@patacerca/ui';
+import { Button, StatusPill, EmptyState, RatingModal, useConfirm } from '@patacerca/ui';
 import { WalkRequest, APP_STRINGS, buildWhatsAppUrl } from '@patacerca/core';
 import { useData } from '../../../providers/DataProvider';
 import { useSessionStore } from '../../../store/session.store';
@@ -22,14 +23,28 @@ export const WalksScreen: React.FC = () => {
   const { requestsRepository, walkersRepository } = useData();
   const { owner } = useSessionStore();
   const { showToast } = useToastStore();
+  const confirm = useConfirm();
 
   const [ratingTarget, setRatingTarget] = useState<WalkRequest | null>(null);
 
-  const { data: requests = [], isLoading } = useQuery({
+  const {
+    data: requests = [],
+    isLoading,
+    refetch,
+    isRefetching,
+  } = useQuery({
     queryKey: ['requests', owner?.phone],
     queryFn: () => requestsRepository.getRequestsByOwner(owner?.phone || '70000000'),
     enabled: Boolean(owner?.phone),
+    // Sin push todavía: refrescamos para ver si el paseador aceptó/rechazó.
+    refetchInterval: 30000,
   });
+
+  useFocusEffect(
+    useCallback(() => {
+      if (owner?.phone) void refetch();
+    }, [owner?.phone, refetch])
+  );
 
   const cancelMutation = useMutation({
     mutationFn: (requestId: string) =>
@@ -52,7 +67,14 @@ export const WalksScreen: React.FC = () => {
     }) => requestsRepository.rateCompletedWalk(requestId, rating, comment),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requests'] });
+      queryClient.invalidateQueries({ queryKey: ['walker', ratingTarget?.walkerId] });
+      queryClient.invalidateQueries({ queryKey: ['walkers'] });
       showToast(APP_STRINGS.toasts.walkRated);
+      setRatingTarget(null);
+    },
+    onError: () => {
+      queryClient.invalidateQueries({ queryKey: ['requests'] });
+      showToast('No se pudo guardar la calificación');
       setRatingTarget(null);
     },
   });
@@ -90,6 +112,22 @@ export const WalksScreen: React.FC = () => {
 
         {Boolean(item.note) && <Text style={styles.noteText}>“{item.note}”</Text>}
 
+        {item.status === 'completed' && item.rating == null && (
+          <View style={styles.ratePrompt}>
+            <Text style={styles.rateStars}>★★★★★</Text>
+            <Text style={styles.rateTitle}>¿Cómo estuvo el paseo de {item.dogName}?</Text>
+            <Text style={styles.rateSubtitle}>
+              Califica a {item.walkerName}. Tu opinión ayuda a otros dueños.
+            </Text>
+            <Button
+              title="Calificar paseo"
+              size="md"
+              onPress={() => setRatingTarget(item)}
+              style={styles.rateButton}
+            />
+          </View>
+        )}
+
         <View style={styles.actionsRow}>
           <TouchableOpacity activeOpacity={0.7} onPress={() => openWalkerWhatsApp(item)}>
             <Text style={styles.chatAction}>WhatsApp</Text>
@@ -98,20 +136,26 @@ export const WalksScreen: React.FC = () => {
           {item.status === 'pending' && (
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => cancelMutation.mutate(item.id)}
+              onPress={async () => {
+                const ok = await confirm({
+                  title: 'Cancelar paseo',
+                  message: `¿Cancelar la solicitud de ${item.dogName} con ${item.walkerName}?`,
+                  confirmLabel: 'Sí, cancelar',
+                  cancelLabel: 'Volver',
+                  tone: 'danger',
+                });
+                if (ok) cancelMutation.mutate(item.id);
+              }}
             >
               <Text style={styles.cancelAction}>Cancelar</Text>
             </TouchableOpacity>
           )}
 
-          {item.status === 'completed' && (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => setRatingTarget(item)}
-              style={styles.confirmBadge}
-            >
-              <Text style={styles.confirmText}>Calificar paseo</Text>
-            </TouchableOpacity>
+          {item.rating != null && (
+            <Text style={styles.ratedText}>
+              Tu calificación {'★'.repeat(item.rating)}
+              <Text style={styles.ratedTextMuted}>{'★'.repeat(5 - item.rating)}</Text>
+            </Text>
           )}
         </View>
       </View>
@@ -128,6 +172,14 @@ export const WalksScreen: React.FC = () => {
         data={requests}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={() => void refetch()}
+            tintColor="#3E8E5E"
+            colors={['#3E8E5E']}
+          />
+        }
         contentContainerStyle={[
           styles.listContent,
           requests.length === 0 && !isLoading && styles.listContentEmpty,
@@ -150,6 +202,7 @@ export const WalksScreen: React.FC = () => {
         <RatingModal
           visible={Boolean(ratingTarget)}
           walkerName={ratingTarget.walkerName}
+          loading={rateMutation.isPending}
           onClose={() => setRatingTarget(null)}
           onSubmit={(rating, comment) =>
             rateMutation.mutate({
@@ -255,15 +308,46 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#B4472B',
   },
-  confirmBadge: {
+  ratePrompt: {
     backgroundColor: '#E4EFE6',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 9999,
+    borderWidth: 1,
+    borderColor: '#C5DEC9',
+    borderRadius: 16,
+    padding: 14,
+    alignItems: 'center',
+    marginTop: 4,
+    marginBottom: 12,
   },
-  confirmText: {
+  rateStars: {
+    fontSize: 22,
+    letterSpacing: 4,
+    color: '#3E8E5E',
+    marginBottom: 6,
+  },
+  rateTitle: {
+    fontFamily: 'BricolageGrotesque_700Bold',
+    fontSize: 16,
+    color: '#2A2420',
+    textAlign: 'center',
+  },
+  rateSubtitle: {
+    fontFamily: 'Figtree_400Regular',
+    fontSize: 13,
+    color: '#4A413A',
+    textAlign: 'center',
+    marginTop: 4,
+    marginBottom: 12,
+  },
+  rateButton: {
+    alignSelf: 'stretch',
+  },
+  ratedText: {
     fontFamily: 'Figtree_600SemiBold',
     fontSize: 13,
-    color: '#2F6E48',
+    color: '#3E8E5E',
+    marginLeft: 'auto',
+  },
+  ratedTextMuted: {
+    color: '#D9CDBC',
   },
 });

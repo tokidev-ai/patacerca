@@ -1,0 +1,155 @@
+<div class="mx-auto max-w-270 px-4 pt-5 pb-12 md:px-6 md:pt-8 md:pb-16">
+  <header class="mb-6">
+    <h1 class="font-display text-3xl leading-tight font-bold tracking-tight">Usuarios</h1>
+    <p class="text-ink-soft mt-1.5">
+      Dueños y paseadores registrados. Una cuenta suspendida no puede entrar a la app.
+    </p>
+  </header>
+
+  <div class="mb-3 flex flex-wrap gap-2" role="tablist">
+    @for (t of kindTabs(); track t.key) {
+      <button
+        type="button"
+        role="tab"
+        class="cursor-pointer rounded-full border-[1.5px] px-4 py-2 font-semibold"
+        [class]="
+          kind() === t.key ? 'border-brand bg-brand text-card' : 'border-line bg-card text-ink-soft'
+        "
+        [attr.aria-selected]="kind() === t.key"
+        (click)="kind.set(t.key)"
+      >
+        {{ t.label }} <span class="ml-1 opacity-75">{{ t.count }}</span>
+      </button>
+    }
+  </div>
+
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div class="border-line bg-card flex rounded-xl border p-1 text-sm">
+      <button
+        type="button"
+        class="cursor-pointer rounded-lg px-3 py-1.5 font-semibold"
+        [class]="state() === 'all' ? 'bg-sand text-ink' : 'text-ink-soft'"
+        (click)="state.set('all')"
+      >
+        Todos
+      </button>
+      <button
+        type="button"
+        class="cursor-pointer rounded-lg px-3 py-1.5 font-semibold"
+        [class]="state() === 'active' ? 'bg-sand text-ink' : 'text-ink-soft'"
+        (click)="state.set('active')"
+      >
+        Activos
+      </button>
+      <button
+        type="button"
+        class="cursor-pointer rounded-lg px-3 py-1.5 font-semibold"
+        [class]="state() === 'blocked' ? 'bg-sand text-ink' : 'text-ink-soft'"
+        (click)="state.set('blocked')"
+      >
+        Suspendidos
+        @if (blockedCount() > 0) {
+          <span class="bg-danger text-card ml-1 rounded-full px-1.5 text-xs">{{
+            blockedCount()
+          }}</span>
+        }
+      </button>
+    </div>
+
+    <input
+      type="search"
+      class="border-line focus:border-brand w-full rounded-xl border-[1.5px] bg-white px-3.5 py-2.5 outline-none sm:w-72"
+      placeholder="Buscar por nombre, teléfono, correo o zona"
+      [ngModel]="query()"
+      (ngModelChange)="query.set($event)"
+    />
+  </div>
+
+  @if (actionError()) {
+    <div class="bg-danger-soft text-danger mb-4 rounded-xl px-3.5 py-3">{{ actionError() }}</div>
+  }
+
+  @if (error()) {
+    <div class="bg-danger-soft text-danger rounded-xl px-3.5 py-3">
+      No pudimos cargar los usuarios: {{ error() }}
+    </div>
+  } @else if (loading()) {
+    <p class="text-ink-soft">Cargando…</p>
+  } @else {
+    <div class="border-line bg-card overflow-x-auto rounded-2xl border px-2 py-1">
+      <table class="w-full min-w-180 border-collapse text-left">
+        <thead>
+          <tr class="text-ink-faint text-[13px]">
+            <th class="px-3 pt-3.5 pb-2.5 font-semibold">Usuario</th>
+            <th class="px-3 pt-3.5 pb-2.5 font-semibold">Teléfono</th>
+            <th class="px-3 pt-3.5 pb-2.5 font-semibold">Zona</th>
+            <th class="px-3 pt-3.5 pb-2.5 font-semibold">Estado</th>
+            <th class="px-3 pt-3.5 pb-2.5 font-semibold">Registro</th>
+            <th class="px-3 pt-3.5 pb-2.5"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of rows(); track r.kind + r.id) {
+            <tr class="border-line border-t" [class.opacity-70]="r.blocked">
+              <td class="p-3">
+                <div class="flex items-center gap-3">
+                  <app-avatar [name]="r.name" [url]="r.photoUrl" />
+                  <span class="flex min-w-0 flex-col">
+                    <strong>{{ r.name }}</strong>
+                    <small class="text-ink-soft">{{ r.email || r.detail }}</small>
+                  </span>
+                </div>
+              </td>
+              <td class="p-3">+591 {{ r.phone }}</td>
+              <td class="p-3">{{ r.zone || '—' }}</td>
+              <td class="p-3">
+                @if (r.blocked) {
+                  <span
+                    class="bg-danger-soft text-danger rounded-full px-2.5 py-1 text-xs font-semibold"
+                    >Suspendido</span
+                  >
+                } @else {
+                  <span
+                    class="bg-brand-soft text-brand-dark rounded-full px-2.5 py-1 text-xs font-semibold"
+                    >Activo</span
+                  >
+                }
+              </td>
+              <td class="text-ink-soft p-3">{{ date(r.createdAt) }}</td>
+              <td class="p-3 text-right">
+                <button
+                  type="button"
+                  class="cursor-pointer rounded-lg border-[1.5px] px-3 py-1.5 text-sm font-semibold whitespace-nowrap"
+                  [class]="
+                    r.blocked
+                      ? 'border-brand text-brand-dark hover:bg-brand-soft'
+                      : 'border-danger/40 text-danger hover:bg-danger-soft'
+                  "
+                  (click)="target.set(r)"
+                >
+                  {{ r.blocked ? 'Reactivar' : 'Suspender' }}
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-ink-soft p-7 text-center">No hay resultados.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+@if (target(); as r) {
+  <app-confirm-dialog
+    [title]="confirmTitle(r)"
+    [message]="confirmMessage(r)"
+    [confirmLabel]="r.blocked ? 'Reactivar' : 'Suspender'"
+    [tone]="r.blocked ? 'primary' : 'danger'"
+    [busy]="saving()"
+    (confirmed)="apply()"
+    (cancelled)="target.set(null)"
+  />
+}

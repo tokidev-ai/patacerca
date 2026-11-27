@@ -48,7 +48,7 @@ export class FirebaseWalkersRepository implements IWalkersRepository {
     const snap = await getDocs(collection(getFirestoreDb(), FS_COLLECTIONS.walkers));
     const list = snap.docs
       .map((d) => documentToWalker(d.data() as Parameters<typeof documentToWalker>[0]))
-      .filter((w) => w.status === 'approved');
+      .filter((w) => w.status === 'approved' && !w.blocked);
     return this.applyFilters(list, filters);
   }
 

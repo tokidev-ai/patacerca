@@ -8,6 +8,8 @@ export interface WalkRequest {
   ownerPhone: string;
   ownerName: string;
   ownerZone: string;
+  /** Mascota elegida (owner.pets[].id). */
+  petId?: string;
   dogName: string;
   dogSize: PetSize;
   walkerId: string;

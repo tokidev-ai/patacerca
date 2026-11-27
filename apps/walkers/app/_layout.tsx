@@ -12,6 +12,7 @@ import {
   BricolageGrotesque_700Bold,
 } from '@expo-google-fonts/bricolage-grotesque';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ConfirmDialogProvider } from '@patacerca/ui';
 import { StatusBar } from 'expo-status-bar';
 import { WalkerDataProvider } from '../src/providers/DataProvider';
 import { QueryProvider } from '../src/providers/QueryProvider';
@@ -44,36 +45,38 @@ export default function RootLayout() {
       <WalkerDataProvider>
         <QueryProvider>
           <ToastProvider>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: '#F7F2EA' },
-              }}
-            >
-              <Stack.Screen name="index" />
-              <Stack.Screen name="(auth)" />
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen
-                name="verification/index"
-                options={{ animation: 'slide_from_right' }}
-              />
-              <Stack.Screen
-                name="verification/[step]"
-                options={{
-                  presentation: 'formSheet',
-                  animation: 'slide_from_bottom',
+            <ConfirmDialogProvider>
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  contentStyle: { backgroundColor: '#F7F2EA' },
                 }}
-              />
-              <Stack.Screen
-                name="profile-preview"
-                options={{ presentation: 'transparentModal' }}
-              />
-              <Stack.Screen
-                name="chat/[threadId]"
-                options={{ animation: 'slide_from_right' }}
-              />
-              <Stack.Screen name="__dev/ui" options={{ presentation: 'modal' }} />
-            </Stack>
+              >
+                <Stack.Screen name="index" />
+                <Stack.Screen name="(auth)" />
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen
+                  name="verification/index"
+                  options={{ animation: 'slide_from_right' }}
+                />
+                <Stack.Screen
+                  name="verification/[step]"
+                  options={{
+                    presentation: 'formSheet',
+                    animation: 'slide_from_bottom',
+                  }}
+                />
+                <Stack.Screen
+                  name="profile-preview"
+                  options={{ presentation: 'transparentModal' }}
+                />
+                <Stack.Screen
+                  name="chat/[threadId]"
+                  options={{ animation: 'slide_from_right' }}
+                />
+                <Stack.Screen name="__dev/ui" options={{ presentation: 'modal' }} />
+              </Stack>
+            </ConfirmDialogProvider>
           </ToastProvider>
         </QueryProvider>
       </WalkerDataProvider>

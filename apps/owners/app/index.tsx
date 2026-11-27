@@ -16,9 +16,16 @@ export default function Index() {
         const session = await authRepository.getCurrentSession();
         if (session && session.role === 'owner') {
           const profile = await profileRepository.getOwnerProfile(session.phone);
-          setSession(session.phone, profile);
-          router.replace('/(tabs)/search');
-          return;
+          if (profile && !profile.blocked) {
+            setSession(session.phone, profile);
+            router.replace('/(tabs)/search');
+            return;
+          }
+          await authRepository.logout();
+          if (profile?.blocked) {
+            router.replace({ pathname: '/(auth)/login', params: { blocked: '1' } });
+            return;
+          }
         }
       } catch {
         // Fallback to login

@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   KeyboardAvoidingView,
+  Image,
   Platform,
 } from 'react-native';
 import DateTimePicker, {
@@ -32,6 +33,7 @@ import {
   toWalkDayId,
   isWalkScheduleInPast,
   roundTimeToInterval,
+  type Pet,
 } from '@patacerca/core';
 import { useData } from '../../../providers/DataProvider';
 import { useSessionStore } from '../../../store/session.store';
@@ -54,6 +56,21 @@ export const RequestWalkModal: React.FC = () => {
   const [showAndroidDatePicker, setShowAndroidDatePicker] = useState(false);
   const [showAndroidTimePicker, setShowAndroidTimePicker] = useState(false);
   const [note, setNote] = useState('');
+
+  const pets: Pet[] =
+    owner?.pets && owner.pets.length > 0
+      ? owner.pets
+      : [
+          {
+            id: 'default',
+            name: owner?.dogName || 'Mi perro',
+            size: owner?.dogSize || 'medium',
+          },
+        ];
+  const [selectedPetId, setSelectedPetId] = useState<string | null>(
+    () => owner?.pets?.[0]?.id ?? 'default'
+  );
+  const selectedPet = pets.find((p) => p.id === selectedPetId) ?? pets[0]!;
   const [error, setError] = useState('');
 
   const walkDayId = toWalkDayId(walkDate);
@@ -80,8 +97,9 @@ export const RequestWalkModal: React.FC = () => {
         ownerPhone: owner?.phone || '70000000',
         ownerName: owner?.name || 'Dueño',
         ownerZone: owner?.zone || 'Queru Queru',
-        dogName: owner?.dogName || 'Toby',
-        dogSize: owner?.dogSize || 'medium',
+        petId: selectedPet.id === 'default' ? undefined : selectedPet.id,
+        dogName: selectedPet.name,
+        dogSize: selectedPet.size,
         walkerId: walkerId || '',
         walkerName: walker?.name || 'Paseador',
         durationMinutes: duration,
@@ -155,9 +173,7 @@ export const RequestWalkModal: React.FC = () => {
         <View style={styles.header}>
           <View>
             <Text style={styles.eyebrow}>Paseo con {walker?.name || 'Paseador'}</Text>
-            <Text style={styles.title}>
-              Solicitar paseo para {owner?.dogName || 'tu perro'}
-            </Text>
+            <Text style={styles.title}>Solicitar paseo para {selectedPet.name}</Text>
           </View>
           <IconButton icon="close" onPress={handleClose} />
         </View>
@@ -167,6 +183,53 @@ export const RequestWalkModal: React.FC = () => {
           extraBottomInset={120}
           contentContainerStyle={styles.scrollContent}
         >
+          {pets.length > 1 && (
+            <>
+              <Text style={styles.sectionLabel}>¿Qué mascota vas a pasear?</Text>
+              <View style={styles.petsRow}>
+                {pets.map((pet) => {
+                  const selected = pet.id === selectedPet.id;
+                  return (
+                    <TouchableOpacity
+                      key={pet.id}
+                      activeOpacity={0.8}
+                      onPress={() => setSelectedPetId(pet.id)}
+                      style={[styles.petChip, selected && styles.petChipSelected]}
+                    >
+                      {pet.photoUrl ? (
+                        <Image source={{ uri: pet.photoUrl }} style={styles.petPhoto} />
+                      ) : (
+                        <View style={[styles.petPhoto, styles.petPhotoEmpty]}>
+                          <Text style={styles.petInitial}>
+                            {pet.name.charAt(0).toUpperCase()}
+                          </Text>
+                        </View>
+                      )}
+                      <View style={styles.petInfo}>
+                        <Text
+                          style={[
+                            styles.petName,
+                            selected && styles.durationTextSelected,
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {pet.name}
+                        </Text>
+                        <Text style={styles.petSize}>
+                          {pet.size === 'small'
+                            ? 'Pequeño'
+                            : pet.size === 'large'
+                              ? 'Grande'
+                              : 'Mediano'}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </>
+          )}
+
           <Text style={styles.sectionLabel}>Duración</Text>
           <View style={styles.durationRow}>
             <TouchableOpacity
@@ -383,6 +446,57 @@ const styles = StyleSheet.create({
     fontFamily: 'Figtree_400Regular',
     fontSize: 13,
     color: '#8A7D70',
+  },
+  petsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  petChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#E6DCCD',
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingLeft: 8,
+    paddingRight: 14,
+    minWidth: '47%',
+    flexGrow: 1,
+  },
+  petChipSelected: {
+    backgroundColor: '#E4EFE6',
+    borderColor: '#3E8E5E',
+  },
+  petPhoto: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+  },
+  petPhotoEmpty: {
+    backgroundColor: '#EFE6D8',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  petInitial: {
+    fontFamily: 'BricolageGrotesque_700Bold',
+    fontSize: 16,
+    color: '#6B6058',
+  },
+  petInfo: {
+    flexShrink: 1,
+  },
+  petName: {
+    fontFamily: 'Figtree_600SemiBold',
+    fontSize: 14,
+    color: '#2A2420',
+  },
+  petSize: {
+    fontFamily: 'Figtree_400Regular',
+    fontSize: 12,
+    color: '#6B6058',
   },
   durationRow: {
     flexDirection: 'row',

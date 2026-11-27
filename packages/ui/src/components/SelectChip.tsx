@@ -28,11 +28,7 @@ export const SelectChip: React.FC<SelectChipProps> = ({
   <TouchableOpacity
     activeOpacity={0.85}
     onPress={onPress}
-    style={[
-      styles.base,
-      emphasized ? styles.emphasized : styles.neutral,
-      style,
-    ]}
+    style={[styles.base, emphasized ? styles.emphasized : styles.neutral, style]}
     accessibilityRole="button"
     accessibilityLabel={accessibilityLabel ?? label}
   >
@@ -42,11 +38,7 @@ export const SelectChip: React.FC<SelectChipProps> = ({
     >
       {label}
     </Text>
-    <AppIcon
-      name="chevron-down"
-      size={16}
-      color={emphasized ? '#2F6E48' : '#6B6058'}
-    />
+    <AppIcon name="chevron-down" size={16} color={emphasized ? '#2F6E48' : '#6B6058'} />
   </TouchableOpacity>
 );
 
