@@ -29,6 +29,8 @@ export interface Walker {
   bio: string;
   reviews: WalkerReview[];
   status: WalkerStatus;
+  /** Suspendido desde el panel admin: no puede entrar a la app ni aparece en búsquedas. */
+  blocked?: boolean;
   zones: string[];
   days: string[];
   timeSlots: string[];

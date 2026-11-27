@@ -18,6 +18,8 @@ export const FS_COLLECTIONS = {
   userAccounts: 'userAccounts',
   /** Chat in-app (fase 2; hoy coordinación por WhatsApp) */
   chatThreads: 'chatThreads',
+  /** Zonas/barrios editables desde el panel admin — doc id: slug del nombre */
+  zones: 'zones',
 } as const;
 
 export type FirestoreCollectionName =

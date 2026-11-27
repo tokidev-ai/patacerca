@@ -5,6 +5,7 @@ export interface CreateWalkRequestInput {
   ownerPhone: string;
   ownerName: string;
   ownerZone: string;
+  petId?: string;
   dogName: string;
   dogSize: PetSize;
   walkerId: string;

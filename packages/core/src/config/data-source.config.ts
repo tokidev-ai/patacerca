@@ -53,21 +53,9 @@ export function isFirebaseConfigured(): boolean {
   return getFirebasePublicConfig() !== null;
 }
 
-/** Minutos de validez del OTP en Firestore (colección otpSessions). */
-export function getOtpTtlMinutes(): number {
-  const raw = process.env.EXPO_PUBLIC_OTP_TTL_MINUTES;
-  const n = raw ? Number.parseInt(raw, 10) : 10;
-  return Number.isFinite(n) && n > 0 ? n : 10;
-}
-
-/**
- * Si está definido, siempre se usa este código (pruebas manuales en consola Firebase).
- * Si no, se usa `1234` (igual que el modo mock) mientras no haya WhatsApp/SMS real.
- * TODO: al conectar el envío real, devolver null aquí para generar códigos aleatorios.
- */
-export function getOtpFixedCode(): string | null {
-  const code = process.env.EXPO_PUBLIC_OTP_FIXED_CODE?.trim();
-  return code && /^\d{4,6}$/.test(code) ? code : '1234';
+/** true si el registro manda SMS reales (Firebase Phone Auth); false en modo mock (código 1234). */
+export function isRealSmsEnabled(): boolean {
+  return !shouldUseMockData() && isFirebaseConfigured();
 }
 
 /** Cada app Expo define su rol en .env (owners | walkers). */

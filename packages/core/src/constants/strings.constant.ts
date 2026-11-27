@@ -1,13 +1,18 @@
 export const APP_STRINGS = {
   errors: {
     invalidBolivianPhone: 'Ingresa un número de Bolivia: 8 dígitos, empieza con 6 o 7',
-    invalidOtp: 'Código incorrecto. Prueba con 1234',
+    invalidOtp: 'Código incorrecto. Revisa el SMS e intenta de nuevo.',
+    otpExpired: 'El código venció. Pide uno nuevo.',
+    otpTooManyRequests: 'Demasiados intentos. Espera unos minutos e intenta de nuevo.',
+    otpSendFailed: 'No pudimos enviar el SMS. Revisa el número e intenta de nuevo.',
     missingWalkerPhoto: 'Agrega tu foto de perfil, de frente y con buena luz',
     invalidEmail: 'Ingresa un correo válido',
     missingPassword: 'Ingresa tu contraseña',
     passwordTooShort: 'La contraseña debe tener al menos 6 caracteres',
     passwordMismatch: 'Las contraseñas no coinciden',
     invalidCredentials: 'Correo o contraseña incorrectos',
+    accountBlocked:
+      'Tu cuenta está suspendida. Si crees que es un error, escríbenos a soporte de Patacerca.',
     emailAlreadyRegistered: 'Este correo ya tiene una cuenta. Inicia sesión.',
     phoneAlreadyRegistered: 'Este número ya tiene cuenta. Inicia sesión con tu correo.',
     authFailed: 'No pudimos completar el proceso. Revisa tu conexión e intenta de nuevo.',
