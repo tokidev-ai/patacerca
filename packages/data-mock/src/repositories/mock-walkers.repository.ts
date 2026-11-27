@@ -16,7 +16,7 @@ export class MockWalkersRepository implements IWalkersRepository {
 
   async getWalkers(filters?: WalkerFilters): Promise<Walker[]> {
     const list = await this.getStoredWalkers();
-    let result = [...list];
+    let result = list.filter((w) => !w.blocked);
 
     if (!filters) return result;
 
