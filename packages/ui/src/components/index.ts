@@ -31,3 +31,4 @@ export * from './PetDetailModal';
 export * from './AppIcon';
 export * from './FormScreenLayout';
 export * from './WhatsAppButton';
+export * from './ConfirmDialog';

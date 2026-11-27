@@ -5,19 +5,22 @@ export interface OtpInputProps extends Omit<TextInputProps, 'onChangeText'> {
   value: string;
   onChangeText: (code: string) => void;
   error?: string;
+  /** Dígitos del código (SMS de Firebase: 6; mock: 4). */
+  length?: number;
 }
 
 export const OtpInput: React.FC<OtpInputProps> = ({
   value,
   onChangeText,
   error,
+  length = 6,
   style,
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
   const handleChange = (text: string) => {
-    const cleaned = text.replace(/\D/g, '').slice(0, 4);
+    const cleaned = text.replace(/\D/g, '').slice(0, length);
     onChangeText(cleaned);
   };
 
@@ -27,8 +30,10 @@ export const OtpInput: React.FC<OtpInputProps> = ({
         value={value}
         onChangeText={handleChange}
         keyboardType="number-pad"
-        maxLength={4}
-        placeholder="0000"
+        maxLength={length}
+        placeholder={'0'.repeat(length)}
+        autoComplete="sms-otp"
+        textContentType="oneTimeCode"
         placeholderTextColor="#8A7D70"
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}

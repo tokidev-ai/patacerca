@@ -1,13 +1,7 @@
 import React from 'react';
-import {
-  Modal,
-  View,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  KeyboardAvoidingView,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { keyboardAvoidingBehavior } from '../keyboard';
+import { Modal, View, StyleSheet, TouchableWithoutFeedback } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useKeyboardHeight } from '../keyboard-aware-scroll';
 
 export interface BottomSheetProps {
   visible: boolean;
@@ -15,38 +9,59 @@ export interface BottomSheetProps {
   children: React.ReactNode;
 }
 
+/**
+ * Hoja inferior. Maneja teclado e insets a mano porque en Android (edge-to-edge)
+ * un Modal no recibe el resize ni los safe areas automáticamente.
+ */
+const BottomSheetBody: React.FC<Omit<BottomSheetProps, 'visible'>> = ({
+  onClose,
+  children,
+}) => {
+  const insets = useSafeAreaInsets();
+  const keyboardHeight = useKeyboardHeight();
+  const keyboardOpen = keyboardHeight > 0;
+
+  return (
+    <View style={[styles.overlay, { paddingTop: insets.top + 24 }]}>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.backdrop} />
+      </TouchableWithoutFeedback>
+      <View
+        style={[
+          styles.sheetContent,
+          { paddingBottom: keyboardOpen ? 16 : Math.max(insets.bottom, 12) + 12 },
+        ]}
+      >
+        {children}
+      </View>
+      <View style={{ height: keyboardHeight }} />
+    </View>
+  );
+};
+
 export const BottomSheet: React.FC<BottomSheetProps> = ({
   visible,
   onClose,
   children,
 }) => {
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        behavior={keyboardAvoidingBehavior}
-        style={styles.keyboardContainer}
-      >
-        <View style={styles.overlay}>
-          <TouchableWithoutFeedback onPress={onClose}>
-            <View style={styles.backdrop} />
-          </TouchableWithoutFeedback>
-          <SafeAreaView edges={['bottom', 'left', 'right']} style={styles.sheetContent}>
-            {children}
-          </SafeAreaView>
-        </View>
-      </KeyboardAvoidingView>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={onClose}
+    >
+      {visible ? <BottomSheetBody onClose={onClose}>{children}</BottomSheetBody> : null}
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  keyboardContainer: {
-    flex: 1,
-  },
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(42, 36, 32, 0.45)',
-    justifyContent: 'flex-end',
   },
   backdrop: {
     flex: 1,
@@ -56,8 +71,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingTop: 16,
-    paddingBottom: 16,
     paddingHorizontal: 20,
-    maxHeight: '92%',
+    flexShrink: 1,
   },
 });

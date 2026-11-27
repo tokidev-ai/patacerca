@@ -61,9 +61,7 @@ export const ToggleFilterSelect: React.FC<ToggleFilterSelectProps> = ({
         visible={open}
         title={sheetTitle}
         onClose={() => setOpen(false)}
-        footer={
-          <Button title="Listo" onPress={() => setOpen(false)} size="lg" />
-        }
+        footer={<Button title="Listo" onPress={() => setOpen(false)} size="lg" />}
       >
         {items.map((item) => {
           const selected = Boolean(values[item.id]);
