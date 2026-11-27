@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Field, Input, FormScreenLayout, useKeyboardHeight } from '@patacerca/ui';
 import {
@@ -30,7 +30,10 @@ export const LoginScreen: React.FC = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<LoginErrors>({});
+  const { blocked } = useLocalSearchParams<{ blocked?: string }>();
+  const [errors, setErrors] = useState<LoginErrors>(() =>
+    blocked === '1' ? { password: APP_STRINGS.errors.accountBlocked } : {}
+  );
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
@@ -54,6 +57,11 @@ export const LoginScreen: React.FC = () => {
       const walker = phone ? await profileRepository.getWalkerProfile(phone) : null;
       if (!phone || !walker) {
         setErrors({ password: APP_STRINGS.errors.invalidCredentials });
+        return;
+      }
+      if (walker.blocked) {
+        await authRepository.logout();
+        setErrors({ password: APP_STRINGS.errors.accountBlocked });
         return;
       }
 

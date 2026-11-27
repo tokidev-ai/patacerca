@@ -10,7 +10,6 @@ import {
   SearchableOptionSelect,
 } from '@patacerca/ui';
 import {
-  COCHABAMBA_ZONES,
   DEFAULT_ZONE,
   MIN_PASSWORD_LENGTH,
   Walker,
@@ -21,6 +20,7 @@ import {
 } from '@patacerca/core';
 import { useWalkerData } from '../../../providers/DataProvider';
 import { useWalkerSessionStore } from '../../../store/session.store';
+import { useZones } from '../../../hooks/useZones';
 
 type FieldErrors = Partial<
   Record<'photo' | 'name' | 'email' | 'password' | 'confirmPassword', string>
@@ -28,6 +28,7 @@ type FieldErrors = Partial<
 
 export const OnboardingScreen: React.FC = () => {
   const router = useRouter();
+  const zoneOptions = useZones();
   const { phone } = useLocalSearchParams<{ phone: string }>();
   const { authRepository, profileRepository, walkersRepository } = useWalkerData();
   const { setSession } = useWalkerSessionStore();
@@ -199,7 +200,7 @@ export const OnboardingScreen: React.FC = () => {
         <Text style={styles.fieldHint}>Zona donde vives</Text>
         <SearchableOptionSelect
           label="Barrio"
-          options={COCHABAMBA_ZONES}
+          options={zoneOptions}
           value={zone}
           onChange={setZone}
           searchPlaceholder="Buscar barrio…"

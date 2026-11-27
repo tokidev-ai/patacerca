@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -6,11 +6,12 @@ import {
   FlatList,
   TouchableOpacity,
   Linking,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Avatar, Segmented, Button, EmptyState } from '@patacerca/ui';
+import { Avatar, Segmented, Button, EmptyState, useConfirm } from '@patacerca/ui';
 import {
   WalkRequest,
   getCompletedStepsCount,
@@ -29,15 +30,27 @@ export const RequestsScreen: React.FC = () => {
   const { requestsRepository, verificationRepository } = useWalkerData();
   const { walker, phone, status, setStatus } = useWalkerSessionStore();
   const { showToast } = useToastStore();
+  const confirm = useConfirm();
 
   const [segment, setSegment] = useState<TabSegment>('new');
 
   const walkerId = walker?.id || 'w1';
 
-  const { data: requests = [] } = useQuery({
+  const {
+    data: requests = [],
+    refetch,
+    isRefetching,
+  } = useQuery({
     queryKey: ['walker_requests', walkerId],
     queryFn: () => requestsRepository.getRequestsByWalker(walkerId),
+    refetchInterval: 30000,
   });
+
+  useFocusEffect(
+    useCallback(() => {
+      void refetch();
+    }, [refetch])
+  );
 
   const { data: vData } = useQuery({
     queryKey: ['verification', walkerId],
@@ -53,7 +66,9 @@ export const RequestsScreen: React.FC = () => {
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ['walker_requests', walkerId] });
       showToast(APP_STRINGS.toasts.walkAccepted(updated.ownerName));
+      setSegment('accepted');
     },
+    onError: () => showToast('No se pudo aceptar. Intenta de nuevo.'),
   });
 
   const rejectMutation = useMutation({
@@ -63,6 +78,7 @@ export const RequestsScreen: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['walker_requests', walkerId] });
       showToast('Solicitud rechazada');
     },
+    onError: () => showToast('No se pudo rechazar. Intenta de nuevo.'),
   });
 
   const completeMutation = useMutation({
@@ -72,6 +88,7 @@ export const RequestsScreen: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['walker_requests', walkerId] });
       showToast(APP_STRINGS.toasts.walkCompleted);
     },
+    onError: () => showToast('No se pudo marcar como completado.'),
   });
 
   const simulateApprovalMutation = useMutation({
@@ -97,7 +114,7 @@ export const RequestsScreen: React.FC = () => {
         ? acceptedRequests
         : historyRequests;
 
-  const handleAcceptPress = (req: WalkRequest) => {
+  const handleAcceptPress = async (req: WalkRequest) => {
     if (status !== 'approved') {
       showToast(APP_STRINGS.errors.verificationRequiredToAccept);
       if (status === 'pending') {
@@ -105,8 +122,44 @@ export const RequestsScreen: React.FC = () => {
       }
       return;
     }
-    acceptMutation.mutate(req.id);
+    const ok = await confirm({
+      title: 'Aceptar paseo',
+      message: `¿Confirmas el paseo de ${req.dogName} con ${req.ownerName}?`,
+      details: [
+        `${req.dayText} · ${req.timeText}`,
+        `${req.durationMinutes} min`,
+        `${req.price} Bs`,
+      ],
+      confirmLabel: 'Sí, aceptar',
+    });
+    if (ok) acceptMutation.mutate(req.id);
   };
+
+  const handleRejectPress = async (req: WalkRequest) => {
+    const ok = await confirm({
+      title: 'Rechazar solicitud',
+      message: `${req.ownerName} verá que rechazaste el paseo de ${req.dogName}.`,
+      confirmLabel: 'Rechazar',
+      cancelLabel: 'Volver',
+      tone: 'danger',
+    });
+    if (ok) rejectMutation.mutate(req.id);
+  };
+
+  const handleCompletePress = async (req: WalkRequest) => {
+    const ok = await confirm({
+      title: '¿Terminaste el paseo?',
+      message: `${req.ownerName} podrá calificar el paseo de ${req.dogName}.`,
+      confirmLabel: 'Sí, completado',
+      cancelLabel: 'Todavía no',
+    });
+    if (ok) completeMutation.mutate(req.id);
+  };
+
+  const isBusy = (id: string) =>
+    (acceptMutation.isPending && acceptMutation.variables === id) ||
+    (rejectMutation.isPending && rejectMutation.variables === id) ||
+    (completeMutation.isPending && completeMutation.variables === id);
 
   const renderItem = ({ item }: { item: WalkRequest }) => {
     return (
@@ -147,7 +200,9 @@ export const RequestsScreen: React.FC = () => {
               title="Rechazar"
               variant="outline"
               style={styles.actionButton}
-              onPress={() => rejectMutation.mutate(item.id)}
+              onPress={() => handleRejectPress(item)}
+              loading={rejectMutation.isPending && rejectMutation.variables === item.id}
+              disabled={isBusy(item.id)}
               size="sm"
             />
             <Button
@@ -155,6 +210,8 @@ export const RequestsScreen: React.FC = () => {
               variant={status === 'approved' ? 'primary' : 'disabled'}
               style={styles.actionButton}
               onPress={() => handleAcceptPress(item)}
+              loading={acceptMutation.isPending && acceptMutation.variables === item.id}
+              disabled={isBusy(item.id)}
               size="sm"
             />
           </View>
@@ -178,7 +235,10 @@ export const RequestsScreen: React.FC = () => {
                 variant="outline"
                 size="sm"
                 style={styles.completeBtn}
-                onPress={() => completeMutation.mutate(item.id)}
+                onPress={() => handleCompletePress(item)}
+                loading={
+                  completeMutation.isPending && completeMutation.variables === item.id
+                }
               />
             )}
             {item.status === 'completed' && (
@@ -197,8 +257,11 @@ export const RequestsScreen: React.FC = () => {
                 ? 'Rechazada por ti'
                 : item.status === 'cancelled'
                   ? 'Cancelada por el dueño'
-                  : 'Paseo completado y calificado ★★★★★'}
+                  : `Paseo completado y calificado ${'★'.repeat(item.rating ?? 0)}`}
             </Text>
+            {item.status === 'confirmed' && Boolean(item.ratingComment) && (
+              <Text style={styles.historyStatusText}>“{item.ratingComment}”</Text>
+            )}
           </View>
         )}
       </View>
@@ -278,6 +341,14 @@ export const RequestsScreen: React.FC = () => {
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={() => void refetch()}
+            tintColor="#3E8E5E"
+            colors={['#3E8E5E']}
+          />
+        }
         ListEmptyComponent={
           <EmptyState
             title={

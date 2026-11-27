@@ -15,15 +15,20 @@ export default function Index() {
       try {
         const session = await authRepository.getCurrentSession();
         if (session && session.role === 'walker') {
+          // Perfil fresco (no el cacheado) para saber si el admin lo suspendió.
           const profile =
-            session.walkerData ??
-            (await profileRepository.getWalkerProfile(session.phone));
-          if (profile) {
+            (await profileRepository.getWalkerProfile(session.phone).catch(() => null)) ??
+            session.walkerData;
+          if (profile && !profile.blocked) {
             setSession(session.phone, profile);
             router.replace('/(tabs)/requests');
             return;
           }
           await authRepository.logout();
+          if (profile?.blocked) {
+            router.replace({ pathname: '/(auth)/login', params: { blocked: '1' } });
+            return;
+          }
         }
       } catch {
         // Fallback to login

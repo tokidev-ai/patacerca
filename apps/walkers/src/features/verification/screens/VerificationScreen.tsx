@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   BackHandler,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button, IconButton } from '@patacerca/ui';
@@ -109,6 +109,7 @@ export const VerificationScreen: React.FC = () => {
   }, []);
 
   const showSubmitFooter = status === 'pending';
+  const insets = useSafeAreaInsets();
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
@@ -123,7 +124,9 @@ export const VerificationScreen: React.FC = () => {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={[
             styles.scrollContent,
-            showSubmitFooter && styles.scrollContentWithFooter,
+            showSubmitFooter
+              ? styles.scrollContentWithFooter
+              : { paddingBottom: Math.max(insets.bottom, 16) + 32 },
           ]}
         >
           <Text style={styles.eyebrow}>{completedCount} de 4 pasos</Text>

@@ -4,7 +4,12 @@ import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Button, IconButton, PhoneInput, FormScreenLayout } from '@patacerca/ui';
-import { isValidBolivianPhone, cleanBolivianPhone, APP_STRINGS } from '@patacerca/core';
+import {
+  isValidBolivianPhone,
+  cleanBolivianPhone,
+  APP_STRINGS,
+  otpSendErrorMessage,
+} from '@patacerca/core';
 import { useWalkerData } from '../../../providers/DataProvider';
 
 export const PhoneScreen: React.FC = () => {
@@ -36,8 +41,8 @@ export const PhoneScreen: React.FC = () => {
         pathname: '/(auth)/code',
         params: { phone: cleaned },
       });
-    } catch {
-      setError(APP_STRINGS.errors.authFailed);
+    } catch (e) {
+      setError(otpSendErrorMessage(e));
     } finally {
       setLoading(false);
     }

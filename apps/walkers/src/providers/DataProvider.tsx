@@ -6,6 +6,7 @@ import {
   IChatRepository,
   IVerificationRepository,
   IProfileRepository,
+  IZonesRepository,
 } from '@patacerca/core';
 import { createWalkerRepositories } from '@patacerca/data-firebase';
 
@@ -16,6 +17,7 @@ interface WalkerDataContextValue {
   chatRepository: IChatRepository;
   verificationRepository: IVerificationRepository;
   profileRepository: IProfileRepository;
+  zonesRepository: IZonesRepository;
 }
 
 const DataContext = createContext<WalkerDataContextValue | null>(null);
