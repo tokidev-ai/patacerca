@@ -12,9 +12,10 @@ import {
   ToggleFilterSelect,
   type ToggleFilterItem,
 } from '@patacerca/ui';
-import { Walker, COCHABAMBA_ZONES } from '@patacerca/core';
+import { Walker } from '@patacerca/core';
 import { useData } from '../../../providers/DataProvider';
 import { useSessionStore } from '../../../store/session.store';
+import { useZones } from '../../../hooks/useZones';
 
 const WALKER_FILTER_ITEMS: ToggleFilterItem[] = [
   { id: 'today', label: 'Disponible hoy' },
@@ -25,6 +26,7 @@ const WALKER_FILTER_ITEMS: ToggleFilterItem[] = [
 
 export const SearchScreen: React.FC = () => {
   const router = useRouter();
+  const zoneOptions = useZones();
   const { walkersRepository } = useData();
   const { owner } = useSessionStore();
 
@@ -198,7 +200,7 @@ export const SearchScreen: React.FC = () => {
           <SearchableOptionSelect
             variant="chip"
             chipLabel="Selecciona tu zona"
-            options={COCHABAMBA_ZONES}
+            options={zoneOptions}
             value={selectedZone}
             onChange={setSelectedZone}
             searchPlaceholder="Buscar barrio…"

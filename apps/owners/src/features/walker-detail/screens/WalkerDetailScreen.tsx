@@ -140,8 +140,14 @@ export const WalkerDetailScreen: React.FC = () => {
 
           {/* Reviews */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Reseñas de tu zona</Text>
-            {walker.reviews.map((rev) => (
+            <Text style={styles.sectionTitle}>Reseñas</Text>
+            {(walker.reviews ?? []).length === 0 && (
+              <Text style={styles.bioText}>
+                Aún no tiene reseñas. Después de un paseo, los dueños pueden calificarlo
+                desde «Mis paseos».
+              </Text>
+            )}
+            {(walker.reviews ?? []).map((rev) => (
               <View key={rev.id} style={styles.reviewCard}>
                 <View style={styles.reviewHeader}>
                   <Text style={styles.reviewAuthor}>
@@ -149,7 +155,9 @@ export const WalkerDetailScreen: React.FC = () => {
                   </Text>
                   <Text style={styles.reviewStars}>{'★'.repeat(rev.rating)}</Text>
                 </View>
-                <Text style={styles.reviewComment}>{rev.comment}</Text>
+                {Boolean(rev.comment) && (
+                  <Text style={styles.reviewComment}>{rev.comment}</Text>
+                )}
               </View>
             ))}
           </View>

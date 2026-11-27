@@ -7,7 +7,6 @@ import {
   Image,
   TouchableOpacity,
   ImageSourcePropType,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -17,6 +16,7 @@ import {
   PetAddModal,
   PetDetailModal,
   AppIcon,
+  useConfirm,
 } from '@patacerca/ui';
 import { Pet, PetSize } from '@patacerca/core';
 import { useData } from '../../../providers/DataProvider';
@@ -43,6 +43,7 @@ export const ProfileScreen: React.FC = () => {
   const { authRepository, profileRepository } = useData();
   const { owner, phone, clearSession, setSession } = useSessionStore();
   const { showToast } = useToastStore();
+  const confirm = useConfirm();
 
   const [addPetVisible, setAddPetVisible] = useState(false);
   const [editPetVisible, setEditPetVisible] = useState(false);
@@ -50,6 +51,14 @@ export const ProfileScreen: React.FC = () => {
   const [editingPet, setEditingPet] = useState<Pet | null>(null);
 
   const handleLogout = async () => {
+    const ok = await confirm({
+      title: 'Cerrar sesión',
+      message: '¿Seguro que quieres salir de tu cuenta?',
+      confirmLabel: 'Salir',
+      tone: 'danger',
+      icon: 'log-out',
+    });
+    if (!ok) return;
     await authRepository.logout();
     clearSession();
     router.replace('/(auth)/login');
@@ -121,19 +130,15 @@ export const ProfileScreen: React.FC = () => {
     }
   };
 
-  const confirmDeletePet = (pet: Pet) => {
-    Alert.alert(
-      `Eliminar a ${pet.name}`,
-      'Esta mascota dejará de aparecer en tu perfil. ¿Continuar?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: () => void handleDeletePet(pet),
-        },
-      ]
-    );
+  const confirmDeletePet = async (pet: Pet) => {
+    const ok = await confirm({
+      title: `Eliminar a ${pet.name}`,
+      message: 'Esta mascota dejará de aparecer en tu perfil.',
+      confirmLabel: 'Eliminar',
+      tone: 'danger',
+      icon: 'trash-2',
+    });
+    if (ok) void handleDeletePet(pet);
   };
 
   const handleDeletePet = async (pet: Pet) => {
