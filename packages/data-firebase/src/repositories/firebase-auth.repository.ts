@@ -7,15 +7,11 @@ import {
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import {
   FS_COLLECTIONS,
-  type OtpSessionDocument,
   type UserAccountDocument,
   EMAIL_TAKEN_ERROR,
   type RegisterCredentialsInput,
   type OwnerDocument,
   cleanBolivianPhone,
-  getOtpFixedCode,
-  getOtpTtlMinutes,
-  getAppRoleFromEnv,
   type IAuthRepository,
   type SessionUser,
   type UserRole,
@@ -24,6 +20,10 @@ import {
 import { getFirebaseAuth, getFirestoreDb } from '../firebase/app';
 import { documentToOwner } from '../firebase/mappers';
 import { findWalkerByIdOrPhone } from '../firebase/walker-lookup';
+import {
+  confirmPhoneVerificationCode,
+  sendPhoneVerificationCode,
+} from '../firebase/phone-verification';
 
 const SESSION_STORAGE_KEY = '@patacerca:session';
 
@@ -41,51 +41,20 @@ const INVALID_LOGIN_CODES = new Set([
   'auth/user-disabled',
 ]);
 
-function generateOtpCode(): string {
-  const fixed = getOtpFixedCode();
-  if (fixed) return fixed;
-  return `${Math.floor(1000 + Math.random() * 9000)}`;
-}
-
 export class FirebaseAuthRepository implements IAuthRepository {
+  /** Envía el SMS real con Firebase Phone Auth. Lanza `Error(OTP_ERRORS.*)`. */
   async sendOtp(phone: string): Promise<boolean> {
-    return this.sendOtpForRole(phone, getAppRoleFromEnv());
-  }
-
-  async sendOtpForRole(phone: string, role: UserRole): Promise<boolean> {
-    const cleaned = cleanBolivianPhone(phone);
-    const code = generateOtpCode();
-    const ttlMs = getOtpTtlMinutes() * 60 * 1000;
-    const createdAt = Date.now();
-
-    const payload: OtpSessionDocument = {
-      phone: cleaned,
-      code,
-      role,
-      expiresAt: createdAt + ttlMs,
-      createdAt,
-    };
-
-    const db = getFirestoreDb();
-    await setDoc(doc(db, FS_COLLECTIONS.otpSessions, cleaned), payload, { merge: true });
+    await sendPhoneVerificationCode(cleanBolivianPhone(phone));
     return true;
   }
 
   async verifyOtp(phone: string, code: string, role: UserRole): Promise<VerifyOtpResult> {
     const cleaned = cleanBolivianPhone(phone);
     const db = getFirestoreDb();
-    const otpSnap = await getDoc(doc(db, FS_COLLECTIONS.otpSessions, cleaned));
 
-    if (!otpSnap.exists()) {
-      return { exists: false, otpValid: false };
-    }
-
-    const otp = otpSnap.data() as OtpSessionDocument;
-    if (otp.expiresAt < Date.now()) {
-      return { exists: false, otpValid: false };
-    }
-    if (otp.code !== code.trim()) {
-      return { exists: false, otpValid: false };
+    const result = await confirmPhoneVerificationCode(cleaned, code);
+    if (result !== 'valid') {
+      return { exists: false, otpValid: false, error: result };
     }
 
     if (role === 'owner') {

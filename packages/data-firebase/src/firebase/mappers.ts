@@ -52,6 +52,7 @@ export function documentToOwner(doc: OwnerDocument): Owner {
       breed: p.breed,
       photoUrl: p.photoUrl,
     })),
+    blocked: doc.blocked,
     createdAt: doc.createdAt,
   };
 }
@@ -85,6 +86,7 @@ export function documentToWalkRequest(doc: WalkRequestDocument): WalkRequest {
     ownerPhone: doc.ownerPhone,
     ownerName: doc.ownerName,
     ownerZone: doc.ownerZone,
+    petId: doc.petId,
     dogName: doc.dogName,
     dogSize: doc.dogSize,
     walkerId: doc.walkerId,

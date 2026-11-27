@@ -5,6 +5,7 @@ import type {
   IRequestsRepository,
   IVerificationRepository,
   IWalkersRepository,
+  IZonesRepository,
 } from '@patacerca/core';
 import { isFirebaseConfigured, shouldUseMockData } from '@patacerca/core';
 import {
@@ -14,6 +15,7 @@ import {
   MockRequestsRepository,
   MockVerificationRepository,
   MockWalkersRepository,
+  MockZonesRepository,
 } from '@patacerca/data-mock';
 import { assertFirebaseConfigured } from './firebase/app';
 import { FirebaseAuthRepository } from './repositories/firebase-auth.repository';
@@ -21,6 +23,7 @@ import { FirebaseProfileRepository } from './repositories/firebase-profile.repos
 import { FirebaseWalkersRepository } from './repositories/firebase-walkers.repository';
 import { FirebaseRequestsRepository } from './repositories/firebase-requests.repository';
 import { FirebaseVerificationRepository } from './repositories/firebase-verification.repository';
+import { FirebaseZonesRepository } from './repositories/firebase-zones.repository';
 
 export interface OwnerRepositories {
   authRepository: IAuthRepository;
@@ -28,6 +31,7 @@ export interface OwnerRepositories {
   requestsRepository: IRequestsRepository;
   chatRepository: IChatRepository;
   profileRepository: IProfileRepository;
+  zonesRepository: IZonesRepository;
 }
 
 export interface WalkerRepositories extends OwnerRepositories {
@@ -47,6 +51,7 @@ function createFirebaseOwnerRepositories(): OwnerRepositories {
     requestsRepository: new FirebaseRequestsRepository(),
     chatRepository: new MockChatRepository(),
     profileRepository: new FirebaseProfileRepository(),
+    zonesRepository: new FirebaseZonesRepository(),
   };
 }
 
@@ -57,6 +62,7 @@ function createMockOwnerRepositories(): OwnerRepositories {
     requestsRepository: new MockRequestsRepository(),
     chatRepository: new MockChatRepository(),
     profileRepository: new MockProfileRepository(),
+    zonesRepository: new MockZonesRepository(),
   };
 }
 
